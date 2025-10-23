@@ -1,0 +1,89 @@
+.user-management {
+  padding: 2rem;
+}
+
+.user-management h1 {
+  color: #14213D;
+}
+
+.form-container {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.form-container form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.form-container input,
+.form-container select {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  flex: 1;
+  min-width: 180px;
+}
+
+.form-container button {
+  background-color: #14213D;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.form-container button:hover {
+  background-color: #FCA311;
+}
+
+/* Table */
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.user-table th,
+.user-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.user-table th {
+  background: #14213D;
+  color: white;
+}
+
+.edit-btn, .delete-btn {
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+}
+
+.edit-btn {
+  background-color: #205295;
+  color: white;
+  margin-right: 6px;
+}
+
+.delete-btn {
+  background-color: #e63946;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #c1121f;
+}

@@ -1,0 +1,116 @@
+.cek-tahapan-container {
+  background: #f7f9fb;
+  padding: 25px;
+  border-radius: 8px;
+}
+
+h2 {
+  color: #0a2647;
+  margin-bottom: 15px;
+}
+
+.table-section {
+  background: white;
+  border: 1px solid #dfe3e6;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+/* 🔹 Header atas tabel (judul + filter) */
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.table-header h3 {
+  color: #0a2647;
+  margin-bottom: 4px;
+}
+
+.table-header p {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-bar input[type="date"] {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.filter-bar span {
+  color: #333;
+}
+
+.btn-cari {
+  background: #007b9e;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-cari:hover {
+  background: #006885;
+}
+
+.tahapan-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.tahapan-table th,
+.tahapan-table td {
+  border-bottom: 1px solid #e0e0e0;
+  padding: 12px 10px;
+  text-align: left;
+}
+
+.tahapan-table th {
+  background: #f2f5f7;
+  color: #0a2647;
+  font-weight: bold;
+}
+
+.tahapan-table input[type="text"] {
+  width: 100%;
+  padding: 6px;
+  margin-top: 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.tahapan-table tr:nth-child(even) {
+  background: #f9fbfc;
+}
+
+.tahapan-table tr:hover {
+  background: #eef7fb;
+}
+
+.btn-detail {
+  background: #444;
+  color: white;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.btn-detail:hover {
+  background: #000;
+}

@@ -1,0 +1,254 @@
+.navbar {
+  background-color: #005ea5;
+  color: white;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  font-family: "Helvetica Neue", Arial, sans-serif;
+}
+
+.navbar-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Brand / Logo */
+.brand span {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.5px;
+}
+
+/* Menu */
+.menu {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* Menu Items */
+.menu-item {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.menu-item:hover {
+  color: #dbeafe; /* soft blue-white hover */
+}
+
+.menu-item.active {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  color: #ffffff;
+}
+
+/* Daftar Button */
+.daftar-btn {
+  background-color: transparent;
+  color: white;
+  border: 2px solid white;
+  padding: 0.4rem 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 0;
+  transition: all 0.2s ease;
+}
+
+.daftar-btn:hover {
+  background-color: white;
+  color: #005ea5;
+}
+
+/* Login Button */
+.login-btn {
+  background-color: white;
+  color: #005ea5;
+  padding: 0.4rem 1.2rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.login-btn:hover {
+  background-color: #003078;
+  color: white;
+}
+
+
+
+/* === Notifikasi Button di Navbar === */
+.button-notifikasi {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: #333;
+  transition: color 0.2s ease;
+}
+
+.button-notifikasi:hover {
+  color: #dc2626;
+}
+
+/* === Overlay (gelap di belakang popup) === */
+.notif-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+/* === Panel Notifikasi (slide dari kanan) === */
+.notif-panel {
+  position: fixed;
+  top: 0;
+  right: -380px;
+  width: 340px;
+  height: 100%;
+  background-color: white;
+  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.2);
+  transition: right 0.3s ease;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+}
+
+.notif-panel.open {
+  right: 0;
+}
+
+/* Header panel */
+.notif-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #005ea5;
+}
+
+.notif-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.notif-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #ffffff;
+}
+
+/* List notifikasi */
+.notif-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.notif-card {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.notif-card h4 {
+  margin: 0 0 0.3rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.notif-card p {
+  margin: 0 0 0.4rem 0;
+  color: #4b5563;
+}
+
+.notif-date {
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+.no-notif {
+  text-align: center;
+  color: #6b7280;
+  margin-top: 3rem;
+}
+
+
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar-inner {
+    flex-direction: column;
+    height: auto;
+    padding: 1rem;
+  }
+
+  .menu {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .daftar-btn,
+  .login-btn {
+    font-size: 0.9rem;
+  }
+}
+
+.profile-container {
+  position: relative;
+  display: inline-block;
+}
+
+.profile-btn {
+  background: none;
+  border: none;
+  font-size: 30px;
+  color: #333;
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 45px;
+  background-color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.dropdown-item {
+  display: block;
+  padding: 10px 16px;
+  text-decoration: none;
+  color: #333;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #f2f2f2;
+}

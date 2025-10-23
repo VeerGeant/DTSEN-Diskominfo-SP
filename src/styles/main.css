@@ -1,0 +1,37 @@
+@import './home.css';
+@import './navbar.css';
+@import './pengajuan.css';
+@import './login.css';
+@import './daftar.css';
+
+
+
+/* -------------------------------- */
+
+
+@import './navbarAdmin.css';
+@import './dashboard.css';
+@import './manajemenUser.css';
+@import './logActivity.css';
+@import './validasi.css';
+@import './aksesdata.css';
+@import './tambahPermohonanAkses.css';
+@import './cekTahapanDok.css';
+@import './DetailTahapanDokumen.css';
+
+
+
+
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  width: 100%;
+  height: 100%;
+  background-color: #fff; 
+  overflow-x: hidden;
+}

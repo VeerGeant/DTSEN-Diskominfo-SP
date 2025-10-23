@@ -1,0 +1,154 @@
+.validasi-page {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+.validasi-page h2 {
+  margin-bottom: 10px;
+}
+
+.validasi-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.validasi-table th,
+.validasi-table td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: left;
+}
+
+.validasi-table th {
+  background-color: #f3f3f3;
+}
+
+.status {
+  padding: 5px 8px;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.status-pending {
+  background-color: #fffae6;
+  color: #b58900;
+}
+
+.btn-detail {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-detail:hover {
+  background-color: #0056b3;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.modal h3 {
+  margin-bottom: 10px;
+}
+
+.modal-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn-validasi {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-validasi:hover {
+  background-color: #1e7e34;
+}
+
+.btn-tolak {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-tolak:hover {
+  background-color: #b21f2d;
+}
+
+.btn-batal {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-batal:hover {
+  background-color: #565e64;
+}
+/* tambahan untuk status */
+.status-forward {
+  background-color: #e7f5ff;
+  color: #0b6fbf;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.status-rejected {
+  background-color: #ffe9e9;
+  color: #b51f2d;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* tombol disposisi */
+.btn-disposisi {
+  background-color: #ff8c00;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-disposisi:hover {
+  background-color: #e07a00;
+}

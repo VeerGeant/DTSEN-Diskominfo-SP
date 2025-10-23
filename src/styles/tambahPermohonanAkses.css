@@ -1,0 +1,259 @@
+/* ====== Container Utama ====== */
+.permohonan-baru-container {
+  background: #f7f9fb;
+  padding: 25px;
+  border-radius: 8px;
+}
+
+h2 {
+  color: #0a2647;
+  margin-bottom: 10px;
+}
+
+/* ====== Section Form ====== */
+.form-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #dfe3e6;
+}
+
+.form-section h3 {
+  color: #0a2647;
+  margin-bottom: 4px;
+}
+
+form label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+form input[type="text"],
+input[type="file"],
+.nomor-penetapan {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  background: #fff;
+  font-size: 0.95rem;
+}
+
+form small {
+  display: block;
+  color: #666;
+  font-size: 0.85rem;
+  margin-bottom: 15px;
+}
+
+/* ====== Tab Navigasi ====== */
+.tab-container {
+  display: flex;
+  margin: 20px 0 15px;
+}
+
+.tab {
+  background: #e7eef3;
+  border: 1px solid #c6d0da;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  margin-right: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+.tab.active {
+  background: #007b9e;
+  color: #fff;
+  border-bottom: none;
+}
+
+/* ====== Upload Dokumen ====== */
+.upload-section {
+  border: 1px solid #0096b2;
+  border-radius: 6px;
+  padding: 20px;
+  background: #f3fcfd;
+}
+
+.upload-field {
+  margin-bottom: 15px;
+}
+
+.upload-field label {
+  font-weight: bold;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.upload-input {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* tombol di kanan */
+  gap: 10px;
+}
+
+.upload-input input[type="file"] {
+  flex: 1;
+  max-width: 60%;
+}
+
+/* ====== Tombol ====== */
+.btn {
+  padding: 6px 10px; /* diperkecil agar lebih proporsional */
+  border-radius: 6px;
+  border: none;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.3s;
+}
+
+.btn.kirim {
+  background: #007bff;
+}
+
+.btn.kembali {
+  background: #dc3545;
+}
+
+.btn.tambah {
+  background: #0096b2;
+}
+
+.btn.lihat {
+  background: #07c31d;
+  width: 70px;
+}
+.btn.lihatcak {
+  background: #07c31d;
+}
+.btn.lihatdok {
+  background: #07c31d;
+}
+
+.btn.hapus {
+  background: #ff4d4d;
+  width: 70px;
+
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+/* ====== Layout Tombol ====== */
+.button-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 25px;
+  gap: 10px;
+}
+
+/* ====== Catatan ====== */
+.note {
+  background: #fdf7e3;
+  padding: 10px;
+  border-radius: 6px;
+  color: #555;
+  font-size: 0.9rem;
+  margin-top: 20px;
+}
+
+/* ====== Variable DTSEN ====== */
+.variable-layout {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+  border: 1px solid #0096b2;
+  border-radius: 6px;
+  background: #f3fcfd;
+  padding: 20px;
+}
+
+.left-panel {
+  border-right: 1px solid #cdd;
+  padding-right: 15px;
+}
+
+.right-panel {
+  background: #fff;
+  border: 1px solid #dfe3e6;
+  border-radius: 6px;
+  padding: 15px;
+}
+
+/* ====== Permintaan Data ====== */
+.add-tema {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.add-tema select {
+  flex: 1;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.permintaan-data {
+  margin-top: 10px;
+}
+
+.permintaan-item {
+  background: #fff;
+  border: 1px solid #dfe3e6;
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.aksi {
+  display: flex;
+  gap: 6px;
+}
+
+/* ====== Format File ====== */
+.format-file {
+  margin-top: 15px;
+}
+
+/* ====== Variable Data List ====== */
+.data-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.variable-list {
+  background: #fff;
+  padding: 15px;
+  border-radius: 6px;
+  border: 1px solid #dfe3e6;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px 15px;
+  margin-top: 10px;
+}
+
+.checkbox-item {
+  font-size: 0.9rem;
+  color: #333;
+}

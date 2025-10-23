@@ -1,0 +1,75 @@
+.log-activity-page {
+  padding: 2rem;
+  color: #0a2647;
+}
+
+.log-activity-page h1 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.filter-container {
+  margin: 1rem 0;
+  text-align: right;
+}
+
+.filter-input {
+  padding: 0.5rem 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  width: 300px;
+  max-width: 100%;
+}
+
+.log-table-container {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.log-table th,
+.log-table td {
+  border: 1px solid #ddd;
+  padding: 0.8rem;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.log-table th {
+  background-color: #144272;
+  color: #fff;
+  font-weight: 600;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-badge.success {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.status-badge.failed {
+  background-color: #f44336;
+  color: #fff;
+}
+
+.log-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.log-table tr:hover {
+  background-color: #f1f5f9;
+}

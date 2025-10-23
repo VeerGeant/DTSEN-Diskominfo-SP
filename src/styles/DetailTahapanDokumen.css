@@ -1,0 +1,138 @@
+.tahapan-container {
+  background: #f7f9fb;
+  padding: 25px;
+  border-radius: 10px;
+  color: #0a2647;
+  font-family: "Inter", sans-serif;
+}
+
+.judul-section {
+  margin-bottom: 15px;
+  font-weight: 700;
+  color: #0a2647;
+}
+
+.info-section {
+  margin-bottom: 25px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ===== Timeline Wrapper ===== */
+.timeline-wrapper {
+  display: flex;
+  overflow-x: auto;
+  padding: 20px 0;
+  scrollbar-width: thin;
+}
+
+.timeline-item {
+  min-width: 180px;
+  text-align: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* ===== Dot and Line ===== */
+.timeline-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  z-index: 2;
+  border: 3px solid #fff;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Status warna dot */
+.dot.pending {
+  background-color: #ccc;
+}
+
+.dot.success {
+  background-color: #28a745;
+}
+
+.dot.failed {
+  background-color: #dc3545;
+}
+
+/* Garis antar dot */
+.line {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateY(-50%);
+  height: 4px;
+  width: 180px;
+  z-index: 1;
+}
+
+/* Warna garis sesuai status berikutnya */
+.line.success {
+  background-color: #28a745;
+}
+
+.line.failed {
+  background-color: #dc3545;
+}
+
+.line.pending {
+  background-color: #ccc;
+}
+
+/* Text */
+.timeline-nama {
+  font-weight: 700;
+  font-size: 13px;
+  margin-top: 10px;
+  color: #0a2647;
+}
+
+.timeline-deskripsi {
+  font-size: 12px;
+  color: #333;
+  margin-top: 5px;
+}
+
+.timeline-tanggal {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #555;
+  font-weight: 600;
+}
+
+.timeline-hari {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #777;
+}
+
+/* Tombol */
+.button-section {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 25px;
+}
+
+.btn-kembali {
+  background-color: #0a2647;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-kembali:hover {
+  background-color: #133b70;
+}
