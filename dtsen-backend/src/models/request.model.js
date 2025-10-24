@@ -9,6 +9,16 @@ const Request = sequelize.define(
       autoIncrement: true,
       primaryKey: true,
     },
+    // ✅ TAMBAH FIELD: user_id (Foreign Key)
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false, // Setiap request harus memiliki user
+      references: {
+        model: "users",
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
     nama_instansi: {
       type: DataTypes.STRING,
       allowNull: false,

@@ -5,7 +5,9 @@ import { logoutUser } from "../../controllers/auth/logoutUser.js";
 import { registerUser } from "../../controllers/user/registerUser.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import pool from "../../config/db.js";
+import { BlacklistedToken } from "../../models/index.js"; // ✅ Import Model BlacklistedToken
+// import pool from "../../config/db.js"; // ❌ Hapus import pool (jika tidak digunakan di route lain)
+
 dotenv.config();
 
 
@@ -26,13 +28,12 @@ router.post("/verify-token", async (req, res) => {
       return res.status(401).json({ error: "Token not provided" });
     }
 
-    // 🔍 Cek apakah token sudah di-blacklist
-    const checkBlacklist = await pool.query(
-      "SELECT 1 FROM blacklisted_tokens WHERE token = $1",
-      [token]
-    );
+    // 🔍 Cek apakah token sudah di-blacklist menggunakan Sequelize
+    const checkBlacklist = await BlacklistedToken.findOne({
+      where: { token: token },
+    });
 
-    if (checkBlacklist.rows.length > 0) {
+    if (checkBlacklist) { // Cek jika object ditemukan
       return res.status(401).json({ error: "Token revoked. Please login again." });
     }
 

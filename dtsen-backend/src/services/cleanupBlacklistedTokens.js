@@ -1,13 +1,23 @@
 import cron from "node-cron";
-import pool from "../config/db.js";
+import models from "../models/index.js"; // Import models
+import { Op } from "sequelize"; // Import Operator untuk WHERE clause
+
+// Dapatkan model BlacklistedToken
+const { BlacklistedToken } = models;
 
 // Jalankan setiap hari jam 00:00
 cron.schedule("0 0 * * *", async () => {
   try {
-    const result = await pool.query(
-      "DELETE FROM blacklisted_tokens WHERE expires_at < NOW()"
-    );
-    console.log(`🧹 Token cleanup: ${result.rowCount} expired tokens deleted.`);
+    const result = await BlacklistedToken.destroy({
+      where: {
+        expires_at: {
+          // Ganti 'WHERE expires_at < NOW()' dengan Sequelize
+          [Op.lt]: new Date(), 
+        },
+      },
+    });
+    // result adalah jumlah baris yang dihapus
+    console.log(`🧹 Token cleanup: ${result} expired tokens deleted.`);
   } catch (error) {
     console.error("🚨 Error during token cleanup:", error.message);
   }

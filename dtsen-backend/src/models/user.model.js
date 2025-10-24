@@ -20,6 +20,17 @@ const UserModel = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    // ✅ TAMBAH FIELD: NIP
+    nip: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true, // Asumsi NIP bersifat unik
+    },
+    // ✅ TAMBAH FIELD: Jabatan
+    jabatan: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     role: {
       type: DataTypes.ENUM("user", "admin", "superadmin"),
       defaultValue: "user",

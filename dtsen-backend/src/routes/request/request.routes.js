@@ -1,3 +1,5 @@
+// src/routes/request/request.routes.js (MODIFIED)
+
 import express from "express";
 import {
   getAllRequests,
@@ -13,22 +15,21 @@ const router = express.Router();
 
 /**
  * Rute untuk manajemen permohonan data.
- * Menggunakan middleware auth + role-based access control.
  */
 
-// 🔹 GET semua permohonan → hanya admin yang boleh
-router.get("/", verifyToken, authorizeRoles("admin"), getAllRequests);
+// 🔹 GET semua permohonan -> Sekarang USER boleh, karena controller sudah memfilternya
+router.get("/", verifyToken, authorizeRoles("admin", "user"), getAllRequests); // <--- PERUBAHAN DI SINI
 
-// 🔹 GET permohonan berdasarkan ID → admin & verifikator boleh
+// 🔹 GET permohonan berdasarkan ID -> admin & verifikator boleh (tidak diubah)
 router.get("/:id", verifyToken, authorizeRoles("admin", "verifikator"), getRequestById);
 
-// 🔹 POST buat permohonan baru → user biasa atau admin boleh
+// 🔹 POST buat permohonan baru -> user biasa atau admin boleh (sudah benar)
 router.post("/", verifyToken, authorizeRoles("user", "admin"), createRequest);
 
-// 🔹 PUT update permohonan → hanya admin atau verifikator yang boleh
+// 🔹 PUT update permohonan -> hanya admin atau verifikator yang boleh (tidak diubah)
 router.put("/:id", verifyToken, authorizeRoles("admin", "verifikator"), updateRequest);
 
-// 🔹 DELETE hapus permohonan → hanya admin yang boleh
+// 🔹 DELETE hapus permohonan -> hanya admin yang boleh (tidak diubah)
 router.delete("/:id", verifyToken, authorizeRoles("admin"), deleteRequest);
 
 export default router;

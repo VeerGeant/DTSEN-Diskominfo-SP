@@ -1,4 +1,4 @@
-import pool from "../../config/db.js";
+import { User } from "../../models/index.js"; // ✅ Import Model User
 
 const getAllUsers = async (req, res) => {
   try {
@@ -8,9 +8,13 @@ const getAllUsers = async (req, res) => {
       return res.status(403).json({ error: "Access denied: only admin or superadmin can access this" });
     }
 
-    const result = await pool.query("SELECT id, nama, email, role, status FROM users ORDER BY id ASC");
+    // 🔄 Ganti pool.query dengan User.findAll
+    const users = await User.findAll({
+      attributes: ["id", "nama", "email", "role", "status"], // Pilih kolom yang dibutuhkan
+      order: [["id", "ASC"]],
+    });
 
-    res.status(200).json(result.rows);
+    res.status(200).json(users);
   } catch (error) {
     console.error("Error fetching all users:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
