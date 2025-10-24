@@ -22,8 +22,6 @@ export default function NavbarAdmin() {
       <header className="admin-header">
         <div className="left-section">
           <img
-            src="https://res.cloudinary.com/dffkscge9/image/upload/v1749892130/SNA_Logo_By_Kekey_1000_x_1000_2_1_soynpu.png"
-            alt="Logo"
             className="logo"
             onClick={() => navigate('/')}
             style={{ cursor: 'pointer', height: '48px' }}

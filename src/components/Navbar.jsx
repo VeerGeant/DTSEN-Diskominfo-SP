@@ -1,70 +1,64 @@
 import { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { isLoggedIn, getCurrentUser, logoutUser } from "../utils/auth";
+import { getCurrentUser, logoutUser } from "../utils/auth"; 
+import "../styles/navbar.css";
 
 export default function Navbar() {
-  const navigate = useNavigate();
-  const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const [user, setUser] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const navigate = useNavigate();
+  
+  // ✅ FIX KRITIS 1: Inisialisasi state user dengan data sesi
+  const [user, setUser] = useState(getCurrentUser()); 
 
-
-  useEffect(() => {
-    if (isLoggedIn()) {
-      setUser(getCurrentUser());
-    }
-
-    const handleUserChange = () => {
-      if (isLoggedIn()) {
-        setUser(getCurrentUser());
-      } else {
-        setUser(null);
-      }
-    };
-
-    
-    window.addEventListener("userChanged", handleUserChange);
-
-    return () => {
-      window.removeEventListener("userChanged", handleUserChange);
-    };
-  }, []);
-
-  const handleLogout = () => {
-    logoutUser();
-    setIsDropdownOpen(false);
-    setIsNotifOpen(false);
-    navigate("/login");
-  };
-
-  const menuItems = [
-    { name: "Beranda", path: "/" },
-    { name: "Pengajuan", path: "/pengajuan" },
+  // Data dummy notifikasi (disederhanakan)
+  const notifications = [
+    { id: 1, title: "Pengajuan Disetujui", content: "Permohonan data Anda telah disetujui.", date: "1 hari lalu" },
+    { id: 2, title: "Menunggu Verifikasi", content: "Dokumen Anda sedang dalam tahap verifikasi teknis.", date: "3 hari lalu" },
   ];
 
-  const notifications = [
-    {
-      id: 1,
-      title: "Pengajuan Diterima",
-      message: "Pengajuan Data Sosial 2025 telah divalidasi.",
-      date: "08 Okt 2025",
-    },
-    {
-      id: 2,
-      title: "Pengajuan Diproses",
-      message: "Data Bantuan Ekonomi sedang diproses.",
-      date: "05 Okt 2025",
-    },
+  // Efek untuk memuat user dan mendengarkan perubahan sesi
+  useEffect(() => {
+    // Fungsi untuk memuat user dari sesi lokal
+    const loadUser = () => {
+        setUser(getCurrentUser());
+    };
+    
+    // Dengarkan event kustom 'userChanged' setelah login/logout
+    window.addEventListener('userChanged', loadUser);
+
+    // Bersihkan listener saat komponen dilepas
+    return () => {
+        window.removeEventListener('userChanged', loadUser);
+    };
+  }, []); 
+
+  const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
+  const toggleNotif = () => setIsNotifOpen(!isNotifOpen);
+  
+  // ✅ FIX 2: Handler Logout
+  const handleLogout = () => {
+    logoutUser(); // Panggil fungsi logout yang menghapus cookie & local storage
+    setIsDropdownOpen(false);
+    // Navigasi ke rute publik
+    navigate("/"); 
+  };
+  
+  // Menu item utama (HANYA BERANDA)
+  const menuItems = [
+    { name: "Beranda", path: "/" },
   ];
 
   return (
     <>
       <nav className="navbar">
         <div className="navbar-inner">
-          <div className="brand" onClick={() => navigate("/")}>
+          {/* Brand / Logo */}
+          <div className="brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
             <span>DTSEN</span>
           </div>
 
+          {/* Menu & Auth Buttons */}
           <div className="menu">
             {menuItems.map((item) => (
               <NavLink
@@ -78,8 +72,67 @@ export default function Navbar() {
               </NavLink>
             ))}
 
-            {/* Jika belum login */}
-            {!user ? (
+            {/* Jika sudah login */}
+            {user ? (
+              <>
+                {/* Notifikasi Button */}
+                <button 
+                  className="button-notifikasi" 
+                  onClick={toggleNotif}
+                  style={{ color: 'white' }} 
+                >
+                  🔔
+                </button>
+
+                {/* Profile Button */}
+                <div className="profile-container">
+                  <button className="profile-btn" onClick={toggleDropdown} style={{ color: 'white' }}>
+                    👤
+                  </button>
+
+                  {isDropdownOpen && (
+                    <div className="dropdown-menu">
+                      <span className="dropdown-item" style={{ fontWeight: 'bold', borderBottom: '1px solid #ccc', cursor: 'default' }}>
+                        {user.nama || 'Pengguna'}
+                      </span>
+                      
+                      {/* Navigasi ke Dashboard/Home yang sesuai */}
+                      <button 
+                        className="dropdown-item" 
+                        onClick={() => {
+                            setIsDropdownOpen(false);
+                            if (user.role === 'admin' || user.role === 'superadmin' || user.role === 'sekda') {
+                                navigate("/admin/dashboard");
+                            } else {
+                                navigate("/");
+                            }
+                        }}
+                      >
+                          Dashboard
+                      </button>
+                      
+                      <button 
+                        className="dropdown-item" 
+                        onClick={() => {
+                            setIsDropdownOpen(false);
+                            navigate("/user/profile"); // Rute mock, bisa diubah
+                        }}
+                      >
+                          Profil
+                      </button>
+
+                      <button 
+                        className="dropdown-item" 
+                        onClick={handleLogout}
+                      >
+                          Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              // Login/Daftar button untuk belum login
               <>
                 <button
                   className="daftar-btn"
@@ -94,69 +147,31 @@ export default function Navbar() {
                   Login
                 </button>
               </>
-            ) : (
-              <>
-                
-                <button
-                  className="button-notifikasi"
-                  onClick={() => setIsNotifOpen(!isNotifOpen)}
-                >
-                  🔔
-                </button>
-
-                {/* 👤 Dropdown Profil */}
-                <div className="profile-menu">
-                  <button
-                    className="profile-btn"
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  >
-                    👤
-                  </button>
-
-                  {isDropdownOpen && (
-                    <div className="dropdown-menu">
-                      <p>{user?.username || "Pengguna"}</p>
-                      <button onClick={() => navigate("/profil")}>Profil</button>
-                      <button onClick={handleLogout}>Logout</button>
-                    </div>
-                  )}
-                </div>
-              </>
             )}
           </div>
         </div>
       </nav>
 
-      {/* 📨 Overlay dan Panel Notifikasi */}
+      {/* Notifikasi Panel (Modal/Sidebar) */}
       {isNotifOpen && (
         <>
-          <div
-            className="notif-overlay"
-            onClick={() => setIsNotifOpen(false)}
-          ></div>
-
-          <div className={`notif-panel ${isNotifOpen ? "open" : ""}`}>
+          <div className="notif-overlay" onClick={toggleNotif}></div>
+          <div className={`notif-panel ${isNotifOpen ? 'open' : ''}`}>
             <div className="notif-header">
-              <h3>Notifikasi</h3>
-              <button
-                className="notif-close-btn"
-                onClick={() => setIsNotifOpen(false)}
-              >
-                ×
-              </button>
+              <h3>Notifikasi ({notifications.length})</h3>
+              <button className="notif-close-btn" onClick={toggleNotif}>&times;</button>
             </div>
-
             <div className="notif-list">
               {notifications.length > 0 ? (
-                notifications.map((notif) => (
+                notifications.map(notif => (
                   <div key={notif.id} className="notif-card">
                     <h4>{notif.title}</h4>
-                    <p>{notif.message}</p>
+                    <p>{notif.content}</p>
                     <span className="notif-date">{notif.date}</span>
                   </div>
                 ))
               ) : (
-                <p className="no-notif">Belum ada notifikasi</p>
+                <p className="no-notif">Tidak ada notifikasi baru.</p>
               )}
             </div>
           </div>

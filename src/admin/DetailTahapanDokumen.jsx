@@ -1,112 +1,109 @@
-import React from "react";
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from 'react-router-dom';
+import apiClient from "../api/apiClient";
 
 export default function TahapanDokumen() {
   const navigate = useNavigate();
-  const data = [
-    {
-      nama: "Permohonan Akses Data",
-      deskripsi: "permohonan data",
-      tanggal: "24-08-2025",
-      hariKerja: 0,
-      status: "success",
-    },
-    {
-      nama: "Verifikasi Teknis",
-      deskripsi: "dokumen sudah lengkap",
-      tanggal: "24-08-2025",
-      hariKerja: 0,
-      status: "success",
-    },
-    {
-      nama: "Verifikasi Substansi",
-      deskripsi: "dokumen sudah sesuai substansi",
-      tanggal: "24-08-2025",
-      hariKerja: 0,
-      status: "success",
-    },
-    {
-      nama: "Verifikasi Koordinator",
-      deskripsi: "silahkan diproses lebih lanjut",
-      tanggal: "24-08-2025",
-      hariKerja: 0,
-      status: "success",
-    },
-    {
-      nama: "Pengolahan Data",
-      deskripsi: "tautan telah tersedia",
-      tanggal: "24-08-2025",
-      hariKerja: 0,
-      status: "success",
-    },
-    {
-      nama: "Cek Kualitas Data",
-      deskripsi: "data sudah ok",
-      tanggal: "24-08-2025",
-      hariKerja: 0,
-      status: "failed",
-    },
-    {
-      nama: "Unduh Data",
-      deskripsi: "unggah BAST",
-      tanggal: "24-08-2025",
-      hariKerja: 0,
-      status: "pending",
-    },
-    {
-      nama: "Verifikasi BAST",
-      deskripsi: "dokumen telah sesuai ketentuan",
-      tanggal: "24-08-2025",
-      hariKerja: 0,
-      status: "pending",
-    },
-    {
-      nama: "Selesai",
-      deskripsi: "selesai",
-      tanggal: "24-08-2025",
-      hariKerja: 0,
-      status: "pending",
-    },
-  ];
+  const location = useLocation();
+  const requestId = new URLSearchParams(location.search).get('requestId'); // Ambil ID dari URL
+
+  const [requestData, setRequestData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fungsi untuk mengambil detail request berdasarkan ID
+  useEffect(() => {
+    const fetchDetail = async () => {
+      if (!requestId) {
+        setError("ID Permohonan tidak ditemukan di URL.");
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        setLoading(true);
+        // Panggil endpoint GET /request/requests/:id
+        const response = await apiClient.get(`/request/requests/${requestId}`); 
+        setRequestData(response.data.data);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching request detail:", err.response || err);
+        setError("Gagal memuat detail permohonan. (Pastikan ID valid)");
+        setRequestData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDetail();
+  }, [requestId]);
+
+  // Handle Loading/Error State
+  if (loading) return <div className="tahapan-container" style={{ textAlign: 'center', padding: '50px' }}>Memuat Detail Tahapan...</div>;
+  if (error) return <div className="tahapan-container" style={{ textAlign: 'center', padding: '50px', color: 'red' }}>Error: {error}</div>;
+  if (!requestData) return <div className="tahapan-container" style={{ textAlign: 'center', padding: '50px' }}>Data Permohonan tidak ditemukan.</div>;
+
+  // Data yang akan ditampilkan
+  const stages = requestData.stages.sort((a, b) => a.id - b.id);
+  const totalHariKerja = requestData.total_hari_kerja || 0;
+  const pemohon = requestData.user || {};
+
+  // Fungsi untuk mendapatkan status dot/line class
+  const getStageStatusClass = (status) => {
+    if (status === "selesai") return "success";
+    if (status === "proses") return "active"; // Tambahkan CSS untuk 'active' jika perlu, atau gunakan 'success'
+    if (status === "menunggu") return "pending";
+    return "pending";
+  };
+  
+  // Fungsi untuk memformat tanggal
+  const formatTanggal = (dateString) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? "-" : date.toLocaleDateString('id-ID');
+  };
 
   return (
     <div className="tahapan-container">
       <h3 className="judul-section">Tahapan Proses Dokumen</h3>
 
       <div className="info-section">
-        <p><b>Nomor Permohonan Dokumen:</b> SM.01/II/2025/001</p>
-        <p><b>Tema Permintaan Data:</b> Set Data Keluarga</p>
-        <p><b>Nama Pemohon:</b> Pengguna (K/L/D)</p>
-        <p><b>Instansi:</b> Kabupaten Purbalingga</p>
-        <p><b>Total Hari Kerja:</b> 0</p>
+        <p><b>Nomor Permohonan Dokumen:</b> {requestData.nomor_permohonan}</p>
+        <p><b>Tema Permintaan Data:</b> {requestData.tema_data}</p>
+        <p><b>Nama Pemohon:</b> {pemohon.nama || requestData.nama_instansi}</p>
+        <p><b>Instansi:</b> {pemohon.instansi || "-"}</p>
+        <p><b>Total Hari Kerja:</b> {totalHariKerja} hari</p>
       </div>
 
       <div className="timeline-wrapper">
-        {data.map((item, index) => {
-          const nextStatus = data[index + 1]?.status || null;
+        {stages.map((item, index) => {
+          const nextStatus = stages[index + 1]?.status || 'pending';
           return (
-            <div key={index} className="timeline-item">
+            <div key={item.id} className="timeline-item">
               {/* Dot dan garis */}
               <div className="timeline-status">
-                <div className={`dot ${item.status}`}></div>
-                {index !== data.length - 1 && (
-                  <div className={`line ${nextStatus}`}></div>
+                <div className={`dot ${getStageStatusClass(item.status)}`}></div>
+                {index !== stages.length - 1 && (
+                  <div className={`line ${getStageStatusClass(nextStatus)}`}></div>
                 )}
               </div>
 
-              <div className="timeline-nama">{item.nama}</div>
-              <div className="timeline-deskripsi">{item.deskripsi}</div>
-              <div className="timeline-tanggal">{item.tanggal}</div>
-              <div className="timeline-hari">{item.hariKerja} hari kerja</div>
+              <div className="timeline-nama">{item.tahap.replace(/_/g, ' ').toUpperCase()}</div>
+              <div className="timeline-deskripsi">{item.keterangan || item.status}</div>
+              <div className="timeline-tanggal">{formatTanggal(item.tanggal_selesai || item.tanggal_mulai)}</div>
+              <div className="timeline-hari">{item.hari_kerja || 0} hari kerja</div>
             </div>
           );
         })}
       </div>
 
       <div className="button-section">
-        <button className="btn-kembali"
-        onClick={() => navigate('/admin/cek-tahapan')}
-        >← Kembali</button>
+        <button 
+            className="btn-kembali"
+            onClick={() => navigate('/admin/cek-tahapan')}
+        >
+            ← Kembali
+        </button>
       </div>
     </div>
   );
