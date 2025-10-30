@@ -1,60 +1,6 @@
-// export async function up(queryInterface, Sequelize) {
-//   await queryInterface.createTable('documents', {
-//     id: {
-//       type: Sequelize.INTEGER,
-//       primaryKey: true,
-//       autoIncrement: true,
-//     },
-//     request_id: {
-//       type: Sequelize.INTEGER,
-//       allowNull: false,
-//       references: { model: 'requests', key: 'id' },
-//       onDelete: 'CASCADE',
-//       onUpdate: 'CASCADE',
-//     },
-//     jenis_dokumen: {
-//       type: Sequelize.ENUM(
-//         "formulir_permohonan",
-//         "surat_pernyataan",
-//         "kak",
-//         "penetapan_kelembagaan",
-//         "dokumen_pendukung"
-//       ),
-//       allowNull: false,
-//     },
-//     nama_dokumen: {
-//       type: Sequelize.STRING,
-//       allowNull: false,
-//     },
-//     file_url: {
-//       type: Sequelize.TEXT,
-//       allowNull: false,
-//     },
-//     file_type: Sequelize.STRING,
-//     keterangan: Sequelize.TEXT,
-//     uploaded_by: {
-//       type: Sequelize.INTEGER,
-//       allowNull: false,
-//     },
-//     created_at: {
-//       type: Sequelize.DATE,
-//       defaultValue: Sequelize.fn('NOW'),
-//     },
-//     updated_at: {
-//       type: Sequelize.DATE,
-//       defaultValue: Sequelize.fn('NOW'),
-//     },
-//   });
-// }
-
-// export async function down(queryInterface) {
-//   await queryInterface.dropTable('documents');
-// }
-
-// migrations/20251022114611-create-documents.cjs
+// File: migrations/20251022114611-create-documents.cjs
 'use strict';
-
-/** @type {import('sequelize-cli').Migration} */
+ /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('documents', {
@@ -67,6 +13,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'requests', key: 'id' },
+     
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       },
@@ -78,6 +25,7 @@ module.exports = {
           "penetapan_kelembagaan",
           "dokumen_pendukung"
         ),
+       
         allowNull: false,
       },
       nama_dokumen: {
@@ -85,13 +33,19 @@ module.exports = {
         allowNull: false,
       },
       file_url: {
-        type: Sequelize.TEXT,
-        allowNull: false,
+        type: Sequelize.TEXT, 
+        allowNull: true, // ✅ MODIFIKASI: Diizinkan NULL
+      },
+      // ✅ KOLOM BARU: Untuk menyimpan data file Base64
+      file_data: {
+        type: Sequelize.TEXT, // Tipe TEXT untuk menampung string Base64
+        allowNull: true,
       },
       file_type: Sequelize.STRING,
       keterangan: Sequelize.TEXT,
       uploaded_by: {
-        type: Sequelize.INTEGER,
+        type: 
+        Sequelize.INTEGER,
         allowNull: false,
       },
       created_at: {

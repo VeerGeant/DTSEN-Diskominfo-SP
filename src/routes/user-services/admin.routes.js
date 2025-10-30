@@ -1,6 +1,7 @@
 import express from "express";
 import { User } from "../../models/index.js"; // ✅ Import model User
-import { verifyToken } from "../../middleware/auth.middleware.js";
+import { verifyToken, authorizeRoles } from "../../middleware/auth.middleware.js"; // ✅ Import authorizeRoles
+import { getAllRequests } from "../../controllers/request/request.controller.js"; // ✅ Import controller
 
 const router = express.Router();
 
@@ -57,5 +58,16 @@ router.put("/users/:id/status", verifyToken, async (req, res) => {
     res.status(500).json({ error: "Failed to update user status" });
   }
 });
+
+
+// 🆕 ROUTE BARU: GET semua permohonan untuk Admin/Superadmin (Dashboard Verifikasi Tahapan)
+// Endpoint: GET /api/admin/verifikasi-tahapan
+router.get(
+    "/verifikasi-tahapan",
+    verifyToken,
+    authorizeRoles("admin", "superadmin"), // Hanya admin/superadmin yang bisa mengakses
+    getAllRequests // Controller sudah memiliki logic untuk mengambil semua data jika role adalah admin
+);
+
 
 export default router;

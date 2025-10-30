@@ -29,6 +29,10 @@ const RequestedDataset = sequelize.define(
       type: DataTypes.ENUM("csv", "xlsx", "json", "html5", "xml", "yaml", "ansi"),
       allowNull: false,
     },
+    dataset_version: {
+        type: DataTypes.STRING,
+        allowNull: true, // Akan diisi oleh Admin setelah proses selesai
+    },
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,

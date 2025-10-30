@@ -1,4 +1,4 @@
-// src/routes/request/request.routes.js (MODIFIED)
+// src/routes/request/request.routes.js
 
 import express from "express";
 import {
@@ -18,10 +18,10 @@ const router = express.Router();
  */
 
 // 🔹 GET semua permohonan -> Sekarang USER boleh, karena controller sudah memfilternya
-router.get("/", verifyToken, authorizeRoles("admin", "user"), getAllRequests); // <--- PERUBAHAN DI SINI
+router.get("/", verifyToken, authorizeRoles("admin", "user"), getAllRequests);
 
-// 🔹 GET permohonan berdasarkan ID -> admin & verifikator boleh (tidak diubah)
-router.get("/:id", verifyToken, authorizeRoles("admin", "verifikator"), getRequestById);
+// 🔹 GET permohonan berdasarkan ID -> admin, verifikator, & user boleh (user perlu cek kepemilikan di controller)
+router.get("/:id", verifyToken, authorizeRoles("admin", "verifikator", "user"), getRequestById); // ✅ MODIFIKASI
 
 // 🔹 POST buat permohonan baru -> user biasa atau admin boleh (sudah benar)
 router.post("/", verifyToken, authorizeRoles("user", "admin"), createRequest);

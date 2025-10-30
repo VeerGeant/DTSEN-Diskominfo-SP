@@ -36,6 +36,7 @@ const Request = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    // ✅ PERUBAHAN KRITIS: Mengganti 'unduh_data' dan 'bast' dengan 'serah_terima'
     status: {
       type: DataTypes.ENUM(
         "menyiapkan_dokumen",
@@ -46,8 +47,7 @@ const Request = sequelize.define(
         "koordinator",
         "pengolahan_data",
         "cek_kualitas",
-        "unduh_data",
-        "bast",
+        "serah_terima", // 👈 NILAI BARU
         "selesai"
       ),
       defaultValue: "menyiapkan_dokumen",

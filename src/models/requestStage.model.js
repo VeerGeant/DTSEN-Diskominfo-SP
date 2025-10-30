@@ -29,8 +29,7 @@ const RequestStage = sequelize.define(
         "koordinator",
         "pengolahan_data",
         "cek_kualitas",
-        "unduh_data",
-        "bast",
+        "serah_terima", // NILAI BARU
         "selesai"
       ),
       allowNull: false,
@@ -53,6 +52,11 @@ const RequestStage = sequelize.define(
     },
     keterangan: {
       type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    // ✅ KOLOM BARU: Tanggal DTSEN Diterima
+    tanggal_dtsen_diterima: {
+      type: DataTypes.DATEONLY,
       allowNull: true,
     },
   },
