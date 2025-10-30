@@ -1,0 +1,197 @@
+/* === Container Utama === */
+.verifikasi-tahapan-container {
+  max-width: 1000px;
+  margin: 40px auto;
+  background: #fff;
+  padding: 32px 40px;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  font-family: "Inter", sans-serif;
+  transition: all 0.3s ease-in-out;
+}
+
+/* === Judul & Subjudul === */
+.verifikasi-tahapan-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #222;
+}
+
+/* === Tabel Tahapan === */
+.verifikasi-tahapan-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  background-color: #fafafa;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.verifikasi-tahapan-table th,
+.verifikasi-tahapan-table td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.95rem;
+}
+
+.verifikasi-tahapan-table th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+  color: #374151;
+}
+
+.verifikasi-tahapan-table tr:hover td {
+  background-color: #f9fafb;
+  transition: background 0.2s ease;
+}
+
+/* === Badge Status === */
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.menunggu {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.proses {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.status-badge.selesai {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+/* === Dropdown Status === */
+.verifikasi-tahapan-select {
+  padding: 6px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background-color: #fff;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.verifikasi-tahapan-select:hover {
+  border-color: #9ca3af;
+}
+
+.verifikasi-tahapan-select:disabled {
+  background-color: #f9fafb;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* === Tombol === */
+.verifikasi-tahapan-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 28px;
+  gap: 16px;
+}
+
+.btn-kembali,
+.btn-simpan {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.25s ease-in-out;
+}
+
+.btn-kembali {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.btn-kembali:hover {
+  background-color: #d1d5db;
+}
+
+.btn-simpan {
+  background-color: #2563eb;
+  color: #fff;
+}
+
+.btn-simpan:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-simpan:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+/* === Alert & Pesan === */
+.verifikasi-tahapan-alert {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.verifikasi-tahapan-alert.error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.verifikasi-tahapan-alert.success {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+.verifikasi-tahapan-deskripsi {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.verifikasi-tahapan-deskripsi:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.verifikasi-tahapan-deskripsi:disabled {
+  background-color: #f9fafb;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* === Responsif untuk layar kecil === */
+@media (max-width: 768px) {
+  .verifikasi-tahapan-container {
+    padding: 24px 20px;
+  }
+
+  .verifikasi-tahapan-table th,
+  .verifikasi-tahapan-table td {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+
+  .verifikasi-tahapan-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+  

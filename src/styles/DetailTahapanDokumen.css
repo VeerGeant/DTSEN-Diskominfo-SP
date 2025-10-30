@@ -18,30 +18,32 @@
   line-height: 1.6;
 }
 
-/* ===== Timeline Wrapper ===== */
 .timeline-wrapper {
   display: flex;
+  align-items: flex-start;
   overflow-x: auto;
-  padding: 20px 0;
+  padding: 30px 0;
   scrollbar-width: thin;
+  gap: 0;
+  position: relative;
 }
 
 .timeline-item {
-  min-width: 180px;
+  flex: 1 0 200px;
   text-align: center;
   position: relative;
-  flex-shrink: 0;
 }
 
-/* ===== Dot and Line ===== */
 .timeline-status {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
   margin-bottom: 10px;
+  height: 24px;
 }
 
+/* DOT (BULATAN) */
 .dot {
   width: 22px;
   height: 22px;
@@ -51,44 +53,47 @@
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Status warna dot */
-.dot.pending {
-  background-color: #ccc;
-}
-
 .dot.success {
-  background-color: #28a745;
+  background-color: #28a745; /* hijau */
 }
 
-.dot.failed {
-  background-color: #dc3545;
+.dot.process {
+  background-color: #ffc107; /* kuning */
 }
 
-/* Garis antar dot */
+.dot.pending {
+  background-color: #ccc; /* abu */
+}
+
+/* GARIS PENGHUBUNG */
 .line {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translateY(-50%);
   height: 4px;
-  width: 180px;
+  width: calc(100% + 200px);
+  transform: translateY(-50%);
   z-index: 1;
 }
 
-/* Warna garis sesuai status berikutnya */
 .line.success {
   background-color: #28a745;
 }
 
-.line.failed {
-  background-color: #dc3545;
+.line.process {
+  background-color: #ffc107;
 }
 
 .line.pending {
   background-color: #ccc;
 }
 
-/* Text */
+/* Hilangkan garis setelah tahap terakhir */
+.timeline-item:last-child .line {
+  display: none;
+}
+
+/* TEKS */
 .timeline-nama {
   font-weight: 700;
   font-size: 13px;
@@ -100,6 +105,9 @@
   font-size: 12px;
   color: #333;
   margin-top: 5px;
+  line-height: 1.4;
+  max-width: 180px;
+  margin: auto;
 }
 
 .timeline-tanggal {
@@ -115,7 +123,7 @@
   color: #777;
 }
 
-/* Tombol */
+/* BUTTON */
 .button-section {
   display: flex;
   justify-content: flex-end;
@@ -135,4 +143,15 @@
 
 .btn-kembali:hover {
   background-color: #133b70;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .timeline-item {
+    flex: 1 0 150px;
+  }
+
+  .line {
+    width: calc(100% + 150px);
+  }
 }

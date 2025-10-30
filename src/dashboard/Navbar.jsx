@@ -9,7 +9,7 @@ export default function NavbarAdmin() {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const handleLogout = () => {
     localStorage.removeItem('token');
-    navigate('/admin');
+    navigate('/dashboard');
   };
 
   const toggleSubmenu = (menu) => {
@@ -47,7 +47,7 @@ export default function NavbarAdmin() {
           </button>
         </div>
 
-        <Link to="/admin/dashboard" className="sidebar-link">Beranda</Link>
+        <Link to="/user/dashboard" className="sidebar-link">Beranda</Link>
 
         
         <div className="sidebar-menu-item"> {/* Renamed from sidebar-menu for more clarity */}
@@ -61,7 +61,7 @@ export default function NavbarAdmin() {
 
           {openMenu === 'layanan' && (
             <div className="submenu">
-              <Link to="/admin/permohonan-akses" className="submenu-link">
+              <Link to="/user/permohonan-akses" className="submenu-link">
                 Permohonan Akses
               </Link>
 
@@ -70,9 +70,7 @@ export default function NavbarAdmin() {
                 Unduh Data <span className="tag-upcoming">(Coming Soon)</span>
               </div>
 
-              <Link to="/admin/monitoring" className="submenu-link">
-                Monitoring
-              </Link>
+              
             </div>
           )}
         </div>
@@ -85,14 +83,13 @@ export default function NavbarAdmin() {
           </button>
           {openMenu === 'progres' && (
             <div className="submenu">
-              <Link to="/admin/set-tahapan" className="submenu-link">Cek Tahapan Dokumen</Link>
+              <Link to="cek-tahapan" className="submenu-link">Cek Tahapan Dokumen</Link>
             </div>
           )}
         </div>
 
-        <Link to="/admin/list-tahapan" className="sidebar-link">Verifikasi Tahapan</Link>
-        <Link to="/admin/kebijakan-akses" className="sidebar-link">Kebijakan Akses</Link>
-        <Link to="/admin/settings" className="sidebar-link">Settings</Link>
+        <Link to="/user/kebijakan-akses" className="sidebar-link">Kebijakan Akses</Link>
+        <Link to="/user/settings" className="sidebar-link">Settings</Link>
 
         <button className="logout-button" onClick={handleLogout}>Logout</button>
       </nav>

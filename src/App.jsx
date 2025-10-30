@@ -130,10 +130,10 @@
 import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from "react-router-dom";
 
 // --- Components & Layouts ---
-import Navbar from "./components/Navbar";
 // FIX KRITIS: Ganti dari "./components/RequireAuth" menjadi "./config/RequireAuth.jsx"
+import Navbar from "./components/Navbar";
+import NavbarUsers from "./dashboard/Navbar";
 import RequireAuth from "./config/RequireAuth.jsx"; 
-import NavbarAdmin from "./admin/NavbarAdmin";
 
 // --- Pages (User/Public) ---
 import Home from "./pages/Home";
@@ -141,28 +141,49 @@ import Daftar from "./pages/Daftar";
 import Login from "./pages/Login";
 import Pengajuan from "./pages/Pengajuan"; // Riwayat Pengajuan User (TIDAK DIPAKAI DI USER DASHBOARD BARU)
 // Import UserDashboard yang sekarang menjadi dashboard fungsional
-import UserDashboard from "./pages/UserDashboard";
+import DashboardUser from "./dashboard/Dashboard.jsx";
+
 
 // --- Pages (Admin) ---
+import NavbarAdmin from "./admin/NavbarAdmin";
 import Dashboard from "./admin/Dashboard";
 import ManajemenUser from "./admin/ManajemenUser";
 import LogActivity from "./admin/LogActivity";
-import PermohonanAksesData from "./admin/PermohonanAksesData";
-import TambahPermohonanAkses from "./admin/TambahPermohonanAkses";
-import CekTahapanDokumen from "./admin/CekTahapanDokumen";
-import DetailTahapanDokumen from "./admin/DetailTahapanDokumen";
 import ValidasiVerifikasi from "./admin/Validasi"; 
-import Settings from "./admin/Settings";
+import Settings from "./components/Settings.jsx";
+import TambahPermohonanAkses from "./admin/TambahPermohonanAkses";
+import SetTahapanDokumen from "./admin/SetTahapanDokumen.jsx";
+import VerifikasiTahapan from "./admin/VerifikasiTahapan.jsx";
+import ListTahapan from "./admin/ListTahapan.jsx";
+import SetDetailTahapanDokumen from "./admin/SetDetailTahapanDokumen.jsx";
+import SetPermohonanAksesData from "./admin/SetPermohonanAksesData.jsx";
+
+
+// --- Pages (User) ---
+import CekTahapanDokumen from "./dashboard/CekTahapanDokumen.jsx";
+import PermohonanAksesData from "./dashboard/PermohonanAksesData";
+import DetailTahapanDokumen from "./dashboard/DetailTahapanDokumen.jsx";
+
 
 
 // Layout Pembungkus untuk Halaman User/Publik
-function UserLayout() {
+function Layout() {
   return (
     <>
       <Navbar />
-      <div className="main-content"> 
+      
         <Outlet />
-      </div>
+      
+    </>
+  );
+}
+function UserLayout() {
+  return (
+    <>
+      <NavbarUsers />
+      
+      
+   
     </>
   );
 }
@@ -178,39 +199,61 @@ export default function App() {
       <Routes>
         
         {/* ============================================== */}
-        {/* 1. RUTE PUBLIK & USER (Menggunakan UserLayout) */}
+        {/* 1. RUTE PUBLIK & USER (Menggunakan Layout) */}
         {/* ============================================== */}
-        <Route element={<UserLayout />}>
+        <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/daftar" element={<Daftar />} />
           <Route path="/login" element={<Login />} />
-          
-          {/* Rute Dashboard User (Role: user, admin, sekda) */}
-          <Route 
-            path="/user/dashboard" 
-            element={<RequireAuth allowedRoles={["user", "admin", "sekda"]}><UserDashboard /></RequireAuth>} 
-          />
+        </Route>
 
-          {/* Rute Riwayat Pengajuan LAMA (Redirect ke /user/dashboard) */}
-          <Route 
-            path="/pengajuan" 
-            element={<Navigate to="/user/dashboard" replace />} 
-          />
-          
+        {/* ============================================== */}
+        {/* 2. RUTE Dashaborad USER (Menggunakan UserLayout) */}
+        {/* ============================================== */}   
+        <Route path="user" element={<UserLayout />}>
+            <Route 
+                path="cek-tahapan" 
+                element={<RequireAuth allowedRoles={["user", "sekda"]}><CekTahapanDokumen /></RequireAuth>} 
+            />
+            <Route 
+                path="detail-tahapan" 
+                element={<RequireAuth allowedRoles={["user", "sekda"]}><DetailTahapanDokumen /></RequireAuth>} 
+            />
+            <Route 
+                path="permohonan-akses" 
+                element={<RequireAuth allowedRoles={["user", "sekda"]}><PermohonanAksesData /></RequireAuth>} 
+            />
+            <Route 
+                path="dashboard" 
+                element={<RequireAuth allowedRoles={["user", "sekda"]}><DashboardUser /></RequireAuth>} 
+            />
+            
         </Route>
 
 
         {/* ============================================== */}
-        {/* 2. RUTE ADMIN DASHBOARD (PROTECTED - Role: Admin/Sekda) */}
+        {/* 3. RUTE ADMIN DASHBOARD (PROTECTED - Role: Admin/Sekda) */}
         {/* ============================================== */}
         <Route path="/admin" element={<AdminLayout />}>
             {/* Index Admin: Redirect ke Dashboard */}
             <Route index element={<Navigate to="dashboard" replace />} />
             
             {/* Menerapkan RequireAuth pada setiap elemen rute admin (Role: admin SAJA, kecuali Tambah Permohonan) */}
+            <Route 
+                path="set-tahapan" 
+                element={<RequireAuth allowedRoles={["admin"]}><SetTahapanDokumen /></RequireAuth>} 
+            />
+            <Route 
+                path="detail-tahapan" 
+                element={<RequireAuth allowedRoles={["admin"]}><SetDetailTahapanDokumen /></RequireAuth>} 
+            />
+            <Route 
+                path="permohonan-akses" 
+                element={<RequireAuth allowedRoles={["admin"]}><SetPermohonanAksesData /></RequireAuth>} 
+            />
             <Route 
                 path="dashboard" 
-                element={<RequireAuth allowedRoles={["admin", "sekda"]}><Dashboard /></RequireAuth>} 
+                element={<RequireAuth allowedRoles={["admin"]}><Dashboard /></RequireAuth>} 
             />
             <Route 
                 path="manajemen-user" 
@@ -220,26 +263,14 @@ export default function App() {
                 path="log-activity" 
                 element={<RequireAuth allowedRoles={["admin"]}><LogActivity /></RequireAuth>} 
             />
-            <Route 
-                path="permohonan-akses" 
-                element={<RequireAuth allowedRoles={["admin", "sekda"]}><PermohonanAksesData /></RequireAuth>} 
-            />
             {/* Rute Tambah Permohonan (Role: admin, user, sekda) */}
             <Route 
                 path="tambah-permohonan" 
-                element={<RequireAuth allowedRoles={["admin", "user", "sekda"]}><TambahPermohonanAkses /></RequireAuth>} 
+                element={<RequireAuth allowedRoles={["admin"]}><TambahPermohonanAkses /></RequireAuth>} 
             /> 
             <Route 
-                path="cek-tahapan" 
-                element={<RequireAuth allowedRoles={["admin", "sekda"]}><CekTahapanDokumen /></RequireAuth>} 
-            />
-            <Route 
-                path="detail-tahapan" 
-                element={<RequireAuth allowedRoles={["admin", "sekda"]}><DetailTahapanDokumen /></RequireAuth>} 
-            />
-            <Route 
                 path="validasi" 
-                element={<RequireAuth allowedRoles={["admin", "sekda"]}><ValidasiVerifikasi /></RequireAuth>} 
+                element={<RequireAuth allowedRoles={["admin"]}><ValidasiVerifikasi /></RequireAuth>} 
             />
             <Route 
                 path="settings" 
@@ -254,6 +285,15 @@ export default function App() {
                 path="kebijakan-akses" 
                 element={<RequireAuth allowedRoles={["admin", "sekda"]}><div>Kebijakan Akses (Coming Soon)</div></RequireAuth>} 
             />
+            <Route 
+                path="verifikasi-tahapan" 
+                element={<RequireAuth allowedRoles={["admin", "sekda"]}><VerifikasiTahapan /></RequireAuth>} 
+            />
+            <Route 
+                path="list-tahapan" 
+                element={<RequireAuth allowedRoles={["admin", "sekda"]}><ListTahapan /></RequireAuth>} 
+            />
+            
 
         </Route>
         

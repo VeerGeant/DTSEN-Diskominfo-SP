@@ -1,0 +1,174 @@
+/* ===== LIST TAHAPAN PAGE ===== */
+.list-tahapan-container {
+  padding: 30px;
+  background-color: #f9fafc;
+  font-family: "Segoe UI", sans-serif;
+  color: #222;
+  min-height: 100vh;
+}
+
+.list-tahapan-container.error {
+  color: red;
+  text-align: center;
+  padding: 60px;
+}
+
+.list-tahapan-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+.list-tahapan-table-section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Header */
+.list-tahapan-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.list-tahapan-table-header h3 {
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+}
+
+.list-tahapan-table-header p {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Filter bar */
+.list-tahapan-filter-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.list-tahapan-filter-bar input[type="date"] {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+}
+
+.list-tahapan-btn-cari {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.list-tahapan-btn-cari:hover {
+  background-color: #0056b3;
+}
+
+/* Table styling */
+.list-tahapan-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.list-tahapan-table th, .list-tahapan-table td {
+  border: 1px solid #e0e0e0;
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.list-tahapan-table th {
+  background-color: #f2f4f8;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.list-tahapan-table th input {
+  width: 100%;
+  margin-top: 6px;
+  padding: 5px 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.list-tahapan-table tbody tr:hover {
+  background-color: #fafafa;
+}
+
+/* Status badge */
+.list-tahapan-status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.list-tahapan-status.proses {
+  background-color: #ffe9a3;
+  color: #8b6a00;
+}
+
+.list-tahapan-status.menunggu {
+  background-color: #cfe2ff;
+  color: #084298;
+}
+
+.list-tahapan-status.selesai {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+/* Buttons */
+.list-tahapan-btn-aksi {
+  background-color: #ff8c00;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.list-tahapan-btn-aksi:hover {
+  background-color: #e67e00;
+}
+
+/* Empty state */
+.list-tahapan-empty {
+  text-align: center;
+  color: #777;
+  font-style: italic;
+  padding: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .list-tahapan-table {
+    font-size: 0.85rem;
+  }
+
+  .list-tahapan-filter-bar {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .list-tahapan-filter-bar input,
+  .list-tahapan-btn-cari {
+    flex: 1;
+    min-width: 120px;
+  }
+}

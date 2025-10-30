@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../api/apiClient"; // Import API Client
 
@@ -14,6 +14,16 @@ const formatToEnum = (format) => {
   return "json"; // Default
 };
 
+// Fungsi utilitas untuk membaca File sebagai Base64
+const readFileAsBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(file);
+    });
+};
+
 // --- Komponen Utama ---
 
 export default function TambahPermohonanAkses() {
@@ -22,19 +32,15 @@ export default function TambahPermohonanAkses() {
   const [formData, setFormData] = useState({
     nomorSurat: "",
     nomorPenetapan: "",
-    // Simpan File objects untuk referensi upload
-    formulir: null,
-    suratKeamanan: null,
-    kak: null,
-    penetapan: null,
-    pendukung: null,
+    // Simpan objek file dan data base64 untuk dikirim
+    files: {}, // Untuk menyimpan { key: File Object }
+    base64Data: {}, // Untuk menyimpan { key: Base64 String }
   });
+
   const [temaDipilih, setTemaDipilih] = useState("");
-  // Struktur permintaan data yang lebih kompleks untuk API
   const [requestedDatasets, setRequestedDatasets] = useState([]); 
-  const [formatFile, setFormatFile] = useState(""); // Format file global
+  const [formatFile, setFormatFile] = useState("");
   const [selectedTema, setSelectedTema] = useState(null);
-  // Simpan variabel yang dipilih dalam bentuk map: { tema_nama: [var1, var2, ...] }
   const [selectedVariables, setSelectedVariables] = useState({});
 
   const [loading, setLoading] = useState(false);
@@ -73,34 +79,60 @@ export default function TambahPermohonanAkses() {
   
   // Stages standar yang akan dikirim ke backend
   const defaultStages = [
-    // Status awal request di backend di-set 'menyiapkan_dokumen' atau 'dikirim'
-    // Kita set stage pertama (verifikasi teknis) ke menunggu
     { tahap: "dikirim", status: "selesai", keterangan: "Permohonan telah diajukan dan dikirim ke sistem." },
     { tahap: "verifikasi_teknis", status: "menunggu", keterangan: "Menunggu verifikasi kelengkapan dokumen teknis." },
     { tahap: "verifikasi_substansi", status: "menunggu", keterangan: "Menunggu verifikasi kesesuaian substansi permohonan." },
     { tahap: "koordinator", status: "menunggu", keterangan: "Menunggu persetujuan Koordinator/SEKDA." },
     { tahap: "pengolahan_data", status: "menunggu", keterangan: "Menunggu proses pengolahan data oleh DISKOMINFO." },
     { tahap: "cek_kualitas", status: "menunggu", keterangan: "Menunggu pengecekan kualitas data." },
-    { tahap: "unduh_data", status: "menunggu", keterangan: "Menunggu tautan data tersedia." },
-    { tahap: "bast", status: "menunggu", keterangan: "Menunggu Berita Acara Serah Terima (BAST)." },
+    { tahap: "serah_terima", status: "menunggu", keterangan: "Menunggu Berita Acara Serah Terima (BAST) / Penyerahan Data." }, 
     { tahap: "selesai", status: "menunggu", keterangan: "Proses permohonan telah selesai." },
   ];
 
-  const handleChange = (e) => {
+  const handleChange = async (e) => {
     const { name, value, files } = e.target;
-    setError(""); // Clear error on change
+    setError(""); 
 
-    if (files) {
-      setFormData({ ...formData, [name]: files[0] });
+    if (files && files.length > 0) {
+        const file = files[0];
+        
+        try {
+            // 1. Baca file sebagai Base64 string (Operasi Asinkron)
+            const base64String = await readFileAsBase64(file);
+            
+            // 2. Satukan semua update state dalam satu panggilan
+            setFormData(prev => ({
+                ...prev,
+                // Simpan File Object dan Base64 string
+                files: { ...prev.files, [name]: file },
+                base64Data: { ...prev.base64Data, [name]: base64String }
+            }));
+            
+        } catch (readError) {
+            console.error("Error reading file:", readError);
+            setError(`Gagal membaca file ${file.name}.`);
+            
+            // Bersihkan data jika gagal dibaca
+            setFormData(prev => ({
+                ...prev,
+                files: { ...prev.files, [name]: null },
+                base64Data: { ...prev.base64Data, [name]: null }
+            }));
+        }
+
     } else {
-      setFormData({ ...formData, [name]: value });
+        // Handle input text (e.g., nomorPenetapan atau nomorSurat)
+        setFormData(prev => ({ 
+            ...prev, 
+            [name]: value 
+        }));
     }
   };
 
   const handleAddTema = () => {
     if (temaDipilih && !requestedDatasets.some((item) => item.tema_data === temaDipilih)) {
       setRequestedDatasets([...requestedDatasets, { tema_data: temaDipilih }]);
-      setSelectedVariables({ ...selectedVariables, [temaDipilih]: [] }); // Inisialisasi variabel kosong
+      setSelectedVariables({ ...selectedVariables, [temaDipilih]: [] }); 
       setTemaDipilih("");
     }
   };
@@ -150,20 +182,22 @@ export default function TambahPermohonanAkses() {
         setLoading(false);
         return;
     }
-
-    // 2. Siapkan Payload Documents
+    
+    // 2. Siapkan Payload Documents (Menggunakan Base64 data)
     const documentsPayload = dokumenList
       .map((doc) => {
-        const file = formData[doc.key];
-        if (file) {
-          // Hanya dokumen penetapan yang memiliki keterangan nomor penetapan
+        const file = formData.files[doc.key]; // Ambil File Object untuk nama dan tipe
+        const base64 = formData.base64Data[doc.key]; // Ambil Base64 Data
+        
+        if (file && base64) {
           const keterangan = doc.key === "penetapan" ? formData.nomorPenetapan : undefined;
           
           return {
             jenis_dokumen: doc.jenis,
             nama_dokumen: file.name,
-            file_url: `http://mock.url/dtsen/${doc.jenis}/${Date.now()}.${file.name.split('.').pop()}`, // Mock URL
+            file_url: null, // Kita gunakan file_data, jadi URL = null
             file_type: file.type,
+            file_data: base64, // ✅ KRITIS: KIRIM DATA BASE64 KE BACKEND
             keterangan: keterangan,
             // uploaded_by akan diambil dari token di backend
           };
@@ -172,23 +206,24 @@ export default function TambahPermohonanAkses() {
       })
       .filter(doc => doc !== null);
       
+    // Validasi Dokumen Wajib (jika diperlukan, tambahkan di sini)
+
     // 3. Siapkan Payload Datasets
     const datasetsPayload = requestedDatasets.map(dataset => ({
         tema_data: dataset.tema_data,
-        format_file: formatToEnum(formatFile), // Gunakan format global
-        variables: selectedVariables[dataset.tema_data] || [], // Ambil variabel dari state
+        format_file: formatToEnum(formatFile), 
+        variables: selectedVariables[dataset.tema_data] || [], 
     }));
 
     // 4. Final Payload
     const finalPayload = {
       nomor_permohonan: formData.nomorSurat,
-      nama_instansi: "Instansi Placeholder", // Ganti dengan data user yang login (belum diimplementasi)
+      nama_instansi: "Instansi Placeholder",
       unit_kerja: "Unit Kerja Placeholder",
-      tema_data: requestedDatasets.map(d => d.tema_data).join(', '), // Gabungkan tema untuk kolom utama
-      tanggal_pengajuan: new Date().toISOString().slice(0, 10), // Tanggal hari ini
-      total_hari_kerja: 0, // Nilai awal
+      tema_data: requestedDatasets.map(d => d.tema_data).join(', '), 
+      tanggal_pengajuan: new Date().toISOString().slice(0, 10),
+      total_hari_kerja: 0,
       
-      // Data nested
       documents: documentsPayload,
       datasets: datasetsPayload,
       stages: defaultStages,
@@ -199,14 +234,12 @@ export default function TambahPermohonanAkses() {
       const response = await apiClient.post("/request/requests", finalPayload);
       setSuccess(response.data.message || "Permohonan berhasil dibuat!");
       
-      // Redirect ke daftar permohonan setelah sukses
       setTimeout(() => {
         navigate("/admin/permohonan-akses");
       }, 2000);
 
     } catch (err) {
       console.error("Submission error:", err.response || err);
-      // Tangani error unique constraint (nomor_permohonan) dari backend
       const errMsg = err.response?.data?.message || "Gagal membuat permohonan. Cek log konsol.";
       setError(errMsg);
     } finally {
@@ -216,13 +249,12 @@ export default function TambahPermohonanAkses() {
 
 
   const handleLihatDokumen = (key) => {
-    const file = formData[key];
-    if (file) {
-      // Menggunakan URL.createObjectURL untuk menampilkan file yang diupload (hanya di browser)
-      const url = URL.createObjectURL(file);
-      window.open(url, "_blank");
+    const base64 = formData.base64Data[key];
+    if (base64) {
+      // Gunakan Base64 yang sudah ada untuk melihat dokumen di tab baru
+      window.open(base64, "_blank");
     } else {
-      alert("Belum ada dokumen yang diunggah!");
+      alert("Belum ada dokumen yang diunggah atau gagal dibaca!");
     }
   };
 
@@ -281,8 +313,9 @@ export default function TambahPermohonanAkses() {
                     <button
                       type="button"
                       className="btn lihatdok"
+                      // ✅ Menggunakan Base64 dari state untuk melihat dokumen
                       onClick={() => handleLihatDokumen(doc.key)}
-                      disabled={!formData[doc.key]}
+                      disabled={!formData.base64Data[doc.key]}
                     >
                       📄 Lihat Dokumen
                     </button>
@@ -292,7 +325,8 @@ export default function TambahPermohonanAkses() {
                       type="text"
                       name="nomorPenetapan"
                       placeholder="Nomor Surat Penetapan"
-                      value={formData.nomorPenetapan}
+                      // ✅ Ambil nilai dari formData langsung, karena ini input text biasa
+                      value={formData.nomorPenetapan || ''}
                       onChange={handleChange}
                       className="nomor-penetapan"
                     />

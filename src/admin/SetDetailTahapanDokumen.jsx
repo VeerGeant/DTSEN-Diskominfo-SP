@@ -5,13 +5,12 @@ import apiClient from "../api/apiClient";
 export default function TahapanDokumen() {
   const navigate = useNavigate();
   const location = useLocation();
-  const requestId = new URLSearchParams(location.search).get('requestId'); // Ambil ID dari URL
+  const requestId = new URLSearchParams(location.search).get('requestId');
 
   const [requestData, setRequestData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fungsi untuk mengambil detail request berdasarkan ID
   useEffect(() => {
     const fetchDetail = async () => {
       if (!requestId) {
@@ -19,17 +18,15 @@ export default function TahapanDokumen() {
         setLoading(false);
         return;
       }
-      
+
       try {
         setLoading(true);
-        // Panggil endpoint GET /request/requests/:id
-        const response = await apiClient.get(`/request/requests/${requestId}`); 
+        const response = await apiClient.get(`/request/requests/${requestId}`);
         setRequestData(response.data.data);
         setError(null);
       } catch (err) {
         console.error("Error fetching request detail:", err.response || err);
         setError("Gagal memuat detail permohonan. (Pastikan ID valid)");
-        setRequestData(null);
       } finally {
         setLoading(false);
       }
@@ -38,25 +35,24 @@ export default function TahapanDokumen() {
     fetchDetail();
   }, [requestId]);
 
-  // Handle Loading/Error State
-  if (loading) return <div className="tahapan-container" style={{ textAlign: 'center', padding: '50px' }}>Memuat Detail Tahapan...</div>;
-  if (error) return <div className="tahapan-container" style={{ textAlign: 'center', padding: '50px', color: 'red' }}>Error: {error}</div>;
-  if (!requestData) return <div className="tahapan-container" style={{ textAlign: 'center', padding: '50px' }}>Data Permohonan tidak ditemukan.</div>;
+  if (loading)
+    return <div className="tahapan-container" style={{ textAlign: 'center', padding: '50px' }}>Memuat Detail Tahapan...</div>;
+  if (error)
+    return <div className="tahapan-container" style={{ textAlign: 'center', padding: '50px', color: 'red' }}>Error: {error}</div>;
+  if (!requestData)
+    return <div className="tahapan-container" style={{ textAlign: 'center', padding: '50px' }}>Data Permohonan tidak ditemukan.</div>;
 
-  // Data yang akan ditampilkan
   const stages = requestData.stages.sort((a, b) => a.id - b.id);
   const totalHariKerja = requestData.total_hari_kerja || 0;
   const pemohon = requestData.user || {};
 
-  // Fungsi untuk mendapatkan status dot/line class
+  // mapping warna berdasarkan status
   const getStageStatusClass = (status) => {
     if (status === "selesai") return "success";
-    if (status === "proses") return "active"; // Tambahkan CSS untuk 'active' jika perlu, atau gunakan 'success'
-    if (status === "menunggu") return "pending";
+    if (status === "proses") return "process";
     return "pending";
   };
-  
-  // Fungsi untuk memformat tanggal
+
   const formatTanggal = (dateString) => {
     if (!dateString) return "-";
     const date = new Date(dateString);
@@ -77,32 +73,39 @@ export default function TahapanDokumen() {
 
       <div className="timeline-wrapper">
         {stages.map((item, index) => {
-          const nextStatus = stages[index + 1]?.status || 'pending';
+          const statusClass = getStageStatusClass(item.status);
+          const nextStage = stages[index + 1];
+          const nextStatusClass = nextStage ? getStageStatusClass(nextStage.status) : null;
+
           return (
             <div key={item.id} className="timeline-item">
-              {/* Dot dan garis */}
               <div className="timeline-status">
-                <div className={`dot ${getStageStatusClass(item.status)}`}></div>
-                {index !== stages.length - 1 && (
-                  <div className={`line ${getStageStatusClass(nextStatus)}`}></div>
+                <div className={`dot ${statusClass}`}></div>
+                {nextStage && (
+                  <div className={`line ${nextStatusClass}`}></div>
                 )}
               </div>
 
-              <div className="timeline-nama">{item.tahap.replace(/_/g, ' ').toUpperCase()}</div>
-              <div className="timeline-deskripsi">{item.keterangan || item.status}</div>
-              <div className="timeline-tanggal">{formatTanggal(item.tanggal_selesai || item.tanggal_mulai)}</div>
-              <div className="timeline-hari">{item.hari_kerja || 0} hari kerja</div>
+              <div className="timeline-nama">
+                {item.tahap.replace(/_/g, " ").toUpperCase()}
+              </div>
+              <div className="timeline-deskripsi">
+                {item.keterangan || item.status}
+              </div>
+              <div className="timeline-tanggal">
+                {formatTanggal(item.tanggal_selesai || item.tanggal_mulai)}
+              </div>
+              <div className="timeline-hari">
+                {item.hari_kerja || 0} hari kerja
+              </div>
             </div>
           );
         })}
       </div>
 
       <div className="button-section">
-        <button 
-            className="btn-kembali"
-            onClick={() => navigate('/admin/cek-tahapan')}
-        >
-            ← Kembali
+        <button className="btn-kembali" onClick={() => navigate('/admin/set-tahapan')}>
+          ← Kembali
         </button>
       </div>
     </div>
