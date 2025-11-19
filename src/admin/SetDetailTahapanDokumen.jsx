@@ -54,10 +54,26 @@ export default function TahapanDokumen() {
   };
 
   const formatTanggal = (dateString) => {
-    if (!dateString) return "-";
-    const date = new Date(dateString);
-    return isNaN(date.getTime()) ? "-" : date.toLocaleDateString('id-ID');
-  };
+  if (!dateString) return "-";
+  
+  // Pastikan waktu diubah ke zona waktu lokal
+  const date = new Date(dateString);
+
+  if (isNaN(date.getTime())) return "-";
+
+  // Format lengkap: 12 November 2025, 14:35 WIB
+  const formatted = date.toLocaleString("id-ID", {
+    weekday: "long", // opsional: "Senin", "Selasa", dll.
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  return formatted.replace(",", ""); // biar lebih rapi
+};
 
   return (
     <div className="tahapan-container">

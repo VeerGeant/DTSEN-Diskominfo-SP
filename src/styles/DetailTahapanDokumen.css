@@ -43,7 +43,6 @@
   height: 24px;
 }
 
-/* DOT (BULATAN) */
 .dot {
   width: 22px;
   height: 22px;
@@ -54,15 +53,15 @@
 }
 
 .dot.success {
-  background-color: #28a745; /* hijau */
+  background-color: #28a745; 
 }
 
 .dot.process {
-  background-color: #ffc107; /* kuning */
+  background-color: #ffc107; 
 }
 
 .dot.pending {
-  background-color: #ccc; /* abu */
+  background-color: #ccc; 
 }
 
 /* GARIS PENGHUBUNG */

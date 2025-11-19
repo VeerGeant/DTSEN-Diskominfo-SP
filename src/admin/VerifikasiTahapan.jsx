@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import apiClient from "../api/apiClient";
-import "./../styles/verifikasiTahapan.css";
 
 const getStatusClass = (status) => {
   const lowerStatus = status.toLowerCase();
@@ -23,10 +22,20 @@ export default function VerifikasiTahapan() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState("");
-
-  // ✅ Tambahan state untuk tanggal dan versi dataset
   const [tanggalDtsenDiterima, setTanggalDtsenDiterima] = useState("");
   const [datasetVersions, setDatasetVersions] = useState({});
+  const [totalDataDiterima, setTotalDataDiterima] = useState({});
+
+  // ✅ fungsi bantu format waktu agar cocok untuk <input type="datetime-local">
+  const formatDatetimeLocal = (datetime) => {
+    if (!datetime) return "";
+    try {
+      const date = new Date(datetime);
+      return date.toISOString().slice(0, 16);
+    } catch {
+      return "";
+    }
+  };
 
   const fetchStages = useCallback(async () => {
     if (!requestId) {
@@ -40,33 +49,44 @@ export default function VerifikasiTahapan() {
       const data = res.data.data;
       setRequestData(data);
 
-      const sortedStages = data.stages.sort((a, b) => a.id - b.id);
+      // ✅ sort & format tanggal
+      const sortedStages = data.stages
+        .sort((a, b) => a.id - b.id)
+        .map((stage) => ({
+          ...stage,
+          tanggal_mulai: formatDatetimeLocal(stage.tanggal_mulai),
+          tanggal_selesai: formatDatetimeLocal(stage.tanggal_selesai),
+        }));
       setStages(sortedStages);
 
-      // ✅ Ambil tanggal DTSEN diterima dari tahap serah_terima
+      // ✅ ambil tanggal DTSEN diterima bila ada
       const serahTerimaStage = sortedStages.find(
         (s) => s.tahap === "serah_terima"
       );
       if (serahTerimaStage?.tanggal_dtsen_diterima) {
-        setTanggalDtsenDiterima(serahTerimaStage.tanggal_dtsen_diterima);
+        setTanggalDtsenDiterima(
+          formatDatetimeLocal(serahTerimaStage.tanggal_dtsen_diterima)
+        );
       }
 
-      // ✅ Inisialisasi versi dataset
+      // ✅ siapkan versi dataset & total data diterima
       const initialVersions = {};
+      const initialTotals = {};
       if (data.requested_datasets?.length > 0) {
         data.requested_datasets.forEach((ds) => {
           initialVersions[ds.id] = ds.dataset_version || "";
+          initialTotals[ds.id] = ds.total_data_diterima || "";
         });
       }
       setDatasetVersions(initialVersions);
-
+      setTotalDataDiterima(initialTotals);
       setError(null);
     } catch (err) {
       console.error("Error fetching stages:", err.response || err);
-      const errMsg =
+      setError(
         err.response?.data?.message ||
-        "Gagal memuat data tahapan. Cek console untuk detail.";
-      setError(errMsg);
+          "Gagal memuat data tahapan. Cek console untuk detail."
+      );
     } finally {
       setLoading(false);
     }
@@ -76,24 +96,11 @@ export default function VerifikasiTahapan() {
     fetchStages();
   }, [fetchStages]);
 
+  // === handler ===
   const handleChangeStatus = (id, newStatus) => {
     setStages((prev) =>
       prev.map((stage) =>
-        stage.id === id
-          ? {
-              ...stage,
-              status: newStatus,
-              tanggal_mulai:
-                newStatus === "proses"
-                  ? stage.tanggal_mulai ||
-                    new Date().toISOString().slice(0, 10)
-                  : stage.tanggal_mulai,
-              tanggal_selesai:
-                newStatus === "selesai"
-                  ? new Date().toISOString().slice(0, 10)
-                  : null,
-            }
-          : stage
+        stage.id === id ? { ...stage, status: newStatus } : stage
       )
     );
   };
@@ -106,7 +113,14 @@ export default function VerifikasiTahapan() {
     );
   };
 
-  // ✅ Handle perubahan versi dataset
+  const handleChangeTanggal = (id, value) => {
+    setStages((prev) =>
+      prev.map((stage) =>
+        stage.id === id ? { ...stage, tanggal_mulai: value } : stage
+      )
+    );
+  };
+
   const handleVersionChange = (datasetId, value) => {
     setDatasetVersions((prev) => ({
       ...prev,
@@ -114,45 +128,14 @@ export default function VerifikasiTahapan() {
     }));
   };
 
-  // ✅ Simpan versi dataset
-  const handleSaveDatasetVersions = async () => {
-    if (!requestData?.requested_datasets?.length) return;
-    setSaving(true);
-    setError(null);
-    setSuccessMsg("");
-
-    try {
-      let versionsUpdated = 0;
-      const promises = requestData.requested_datasets.map(async (ds) => {
-        const newVersion = datasetVersions[ds.id];
-        if (newVersion && newVersion !== ds.dataset_version) {
-          versionsUpdated++;
-          await apiClient.put(`/request/datasets/${ds.id}/version`, {
-            dataset_version: newVersion,
-          });
-        }
-      });
-
-      await Promise.all(promises);
-
-      if (versionsUpdated > 0) {
-        setSuccessMsg(`${versionsUpdated} versi dataset berhasil diperbarui.`);
-        await fetchStages();
-      } else {
-        setSuccessMsg("Tidak ada versi dataset yang diubah.");
-      }
-    } catch (err) {
-      console.error("Error saving dataset versions:", err.response || err);
-      setError(
-        `Gagal menyimpan versi dataset. ${
-          err.response?.data?.message || err.message
-        }`
-      );
-    } finally {
-      setSaving(false);
-    }
+  const handleTotalDataChange = (datasetId, value) => {
+    setTotalDataDiterima((prev) => ({
+      ...prev,
+      [datasetId]: value,
+    }));
   };
 
+  // === simpan data ===
   const handleSave = async () => {
     setSaving(true);
     setError(null);
@@ -160,7 +143,10 @@ export default function VerifikasiTahapan() {
 
     try {
       let stagesUpdated = 0;
-      const updatePromises = stages.map(async (stage) => {
+      let versionsUpdated = 0;
+      let totalsUpdated = 0;
+
+      const updateStagePromises = stages.map(async (stage) => {
         const originalStage = requestData.stages.find(
           (s) => s.id === stage.id
         );
@@ -168,28 +154,53 @@ export default function VerifikasiTahapan() {
         const isChanged =
           originalStage?.status !== stage.status ||
           originalStage?.keterangan !== stage.keterangan ||
+          formatDatetimeLocal(originalStage?.tanggal_mulai) !==
+            stage.tanggal_mulai ||
           originalStage?.tanggal_dtsen_diterima !== tanggalDtsenDiterima;
 
         if (isChanged) {
           stagesUpdated++;
           const payload = {
             status: stage.status,
-            tanggal_mulai: stage.tanggal_mulai || null,
-            tanggal_selesai: stage.tanggal_selesai || null,
+            tanggal_mulai: stage.tanggal_mulai
+              ? new Date(stage.tanggal_mulai).toISOString()
+              : null,
+            tanggal_selesai:
+              stage.status === "selesai" && stage.tanggal_mulai
+                ? new Date(stage.tanggal_mulai).toISOString()
+                : null,
             keterangan:
               stage.keterangan ||
               `Status diubah menjadi ${stage.status.toUpperCase()}`,
           };
 
           if (stage.tahap === "serah_terima" && tanggalDtsenDiterima) {
-            payload.tanggal_dtsen_diterima = tanggalDtsenDiterima;
+            payload.tanggal_dtsen_diterima = new Date(
+              tanggalDtsenDiterima
+            ).toISOString();
           }
 
           return apiClient.put(`/request/stages/${stage.id}`, payload);
         }
       });
 
-      await Promise.all(updatePromises);
+      const updateDatasetPromises = requestData.requested_datasets.map(
+        async (ds) => {
+          const newVersion = datasetVersions[ds.id];
+          const newTotal = totalDataDiterima[ds.id];
+
+          if (newVersion !== ds.dataset_version || newTotal !== ds.total_data_diterima) {
+            versionsUpdated++;
+            if (newTotal) totalsUpdated++;
+            await apiClient.put(`/request/datasets/${ds.id}/version`, {
+              dataset_version: newVersion,
+              total_data_diterima: newTotal,
+            });
+          }
+        }
+      );
+
+      await Promise.all([...updateStagePromises, ...updateDatasetPromises]);
 
       const lastStage = stages
         .slice()
@@ -202,15 +213,15 @@ export default function VerifikasiTahapan() {
       }
 
       setSuccessMsg(
-        `Status ${stagesUpdated} tahapan berhasil diperbarui! Mengambil data terbaru...`
+        `Perubahan disimpan: ${stagesUpdated} tahapan, ${versionsUpdated} dataset versi, dan ${totalsUpdated} total data diperbarui.`
       );
       await fetchStages();
       setTimeout(() => setSuccessMsg(""), 3000);
     } catch (err) {
       console.error("Error saving changes:", err.response || err);
       setError(
-        `Gagal memperbarui status tahapan. ${
-          err.response?.data?.error || err.message || "Cek koneksi server."
+        `Gagal menyimpan perubahan. ${
+          err.response?.data?.message || err.message
         }`
       );
     } finally {
@@ -262,7 +273,6 @@ export default function VerifikasiTahapan() {
         <p className="verifikasi-tahapan-alert success">{successMsg}</p>
       )}
 
-      {/* === TABLE TAHAPAN === */}
       <table className="verifikasi-tahapan-table">
         <thead>
           <tr>
@@ -271,6 +281,7 @@ export default function VerifikasiTahapan() {
             <th>Deskripsi</th>
             <th>Status Saat Ini</th>
             <th>Ubah Status</th>
+            <th>Waktu</th>
           </tr>
         </thead>
         <tbody>
@@ -298,9 +309,7 @@ export default function VerifikasiTahapan() {
                 <select
                   className="verifikasi-tahapan-select"
                   value={item.status}
-                  onChange={(e) =>
-                    handleChangeStatus(item.id, e.target.value)
-                  }
+                  onChange={(e) => handleChangeStatus(item.id, e.target.value)}
                   disabled={saving}
                 >
                   {STATUS_OPTIONS.map((status) => (
@@ -310,20 +319,30 @@ export default function VerifikasiTahapan() {
                   ))}
                 </select>
               </td>
+              <td>
+                <input
+                  type="datetime-local"
+                  className="verifikasi-tahapan-deskripsi"
+                  value={item.tanggal_mulai || ""}
+                  onChange={(e) =>
+                    handleChangeTanggal(item.id, e.target.value)
+                  }
+                  disabled={saving}
+                />
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      {/* === INPUT TANGGAL + VERSI DATASET === */}
       {semuaTahapanSelesai && (
         <>
           <div className="verifikasi-tahapan-form">
             <h4 style={{ marginTop: "20px", fontSize: "1rem", color: "#111" }}>
-              Tanggal DTSEN Diterima
+              Waktu DTSEN Diterima
             </h4>
             <input
-              type="date"
+              type="datetime-local"
               className="verifikasi-tahapan-deskripsi"
               value={tanggalDtsenDiterima || ""}
               onChange={(e) => setTanggalDtsenDiterima(e.target.value)}
@@ -335,66 +354,56 @@ export default function VerifikasiTahapan() {
                 marginTop: "6px",
               }}
             >
-              Masukkan tanggal dokumen DTSEN diterima setelah semua tahapan
-              selesai.
+              Masukkan tanggal & waktu dokumen DTSEN diterima setelah semua
+              tahapan selesai.
             </p>
           </div>
 
-          {/* ✅ FORM INPUT VERSI DATASET */}
           {requestData.requested_datasets?.length > 0 && (
-            <div
-              className="verifikasi-tahapan-form"
-              style={{
-                marginTop: "25px",
-                background: "#f9fafb",
-                padding: "20px",
-                borderRadius: "10px",
-              }}
-            >
+            <div className="verifikasi-tahapan-form">
               <h4 style={{ fontSize: "1rem", color: "#111" }}>
                 Input Versi Dataset
               </h4>
-              <table className="verifikasi-tahapan-table">
-                <thead>
-                  <tr>
-                    <th>No</th>
-                    <th>Nama Dataset</th>
-                    <th>Versi Dataset</th>
+              <tbody>
+                {requestData.requested_datasets.map((ds) => (
+                  <tr key={ds.id}>
+                    <td>
+                      <input
+                        type="text"
+                        className="verifikasi-tahapan-deskripsi"
+                        placeholder="Masukkan versi dataset..."
+                        value={datasetVersions[ds.id] || ""}
+                        onChange={(e) =>
+                          handleVersionChange(ds.id, e.target.value)
+                        }
+                        disabled={saving}
+                      />
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {requestData.requested_datasets.map((ds, i) => (
-                    <tr key={ds.id}>
-                      <td>{i + 1}</td>
-                      <td>{ds.dataset_name || "-"}</td>
-                      <td>
-                        <input
-                          type="text"
-                          className="verifikasi-tahapan-deskripsi"
-                          placeholder="Masukkan versi dataset..."
-                          value={datasetVersions[ds.id] || ""}
-                          onChange={(e) =>
-                            handleVersionChange(ds.id, e.target.value)
-                          }
-                          disabled={saving}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div
-                className="verifikasi-tahapan-buttons"
-                style={{ justifyContent: "flex-end" }}
-              >
-                <button
-                  className="btn-simpan"
-                  onClick={handleSaveDatasetVersions}
-                  disabled={saving}
-                >
-                  {saving ? "Menyimpan..." : "Simpan Versi Dataset"}
-                </button>
-              </div>
+                ))}
+              </tbody>
+
+              <h4 style={{ fontSize: "1rem", color: "#111", marginTop: "20px" }}>
+                Input Total Data Diterima
+              </h4>
+              <tbody>
+                {requestData.requested_datasets.map((ds) => (
+                  <tr key={ds.id}>
+                    <td>
+                      <input
+                        type="number"
+                        className="verifikasi-tahapan-deskripsi"
+                        placeholder="Masukkan total data diterima..."
+                        value={totalDataDiterima[ds.id] || ""}
+                        onChange={(e) =>
+                          handleTotalDataChange(ds.id, e.target.value)
+                        }
+                        disabled={saving}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             </div>
           )}
         </>

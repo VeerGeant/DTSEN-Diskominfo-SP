@@ -1,13 +1,170 @@
 import React, { useState, useEffect } from "react";
-import apiClient from "../api/apiClient"; // Import API Client
+import { useNavigate } from 'react-router-dom';
+import apiClient from "../api/apiClient";
 
+
+// Helper: Format timestamp ke format Indonesia
+const formatTimestamp = (timestamp) => {
+  if (!timestamp) return "N/A";
+  const dateObject = new Date(timestamp);
+  if (isNaN(dateObject.getTime())) return "N/A";
+
+  return dateObject
+    .toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    })
+    .replace(/\./g, "");
+};
+
+// --- Komponen Modal Detail Permohonan ---
+const PermohonanDetailModal = ({ data, onClose }) => {
+  if (!data) return null;
+
+  const datasetGroups = data.requested_datasets || [];
+  const documents = data.documents || [];
+
+  const pemohonNama = data.user?.nama || "N/A";
+  const pemohonInstansi = data.user?.instansi || data.nama_instansi || "N/A";
+  const pemohonJabatan = data.user?.jabatan || "N/A";
+
+  // Fungsi untuk melihat dokumen
+  const handleViewDocument = async (docId, fileName, fileType) => {
+    try {
+      const response = await apiClient.get(`/request/documents/${docId}/file`);
+      const { file_data, file_type: apiFileType } = response.data.data;
+
+      if (!file_data) {
+        alert("Data file tidak tersedia atau kosong.");
+        return;
+      }
+
+      const mimeType = apiFileType || fileType || "application/octet-stream";
+      const base64String = file_data.includes("base64,")
+        ? file_data.split("base64,")[1]
+        : file_data;
+
+      const byteCharacters = atob(base64String);
+      const byteNumbers = Array.from(byteCharacters, (char) =>
+        char.charCodeAt(0)
+      );
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: mimeType });
+
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    } catch (err) {
+      console.error("Error viewing document:", err.response || err);
+      alert(
+        `Gagal melihat dokumen: ${
+          err.response?.data?.message || "Server error."
+        }`
+      );
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3 className="modal-title">
+          Detail Permohonan: {data.nomor_permohonan}
+        </h3>
+
+        {/* Informasi Utama */}
+        <section>
+          <h4 className="section-title">Informasi Utama</h4>
+          <p><strong>Nomor Permohonan:</strong> {data.nomor_permohonan}</p>
+          <p><strong>Status Terakhir:</strong> {data.status?.toUpperCase()}</p>
+          <p><strong>Tanggal Pengajuan:</strong> {formatTimestamp(data.tanggal_pengajuan || data.created_at)}</p>
+          <p><strong>Tema Data Ringkas:</strong> {data.tema_data}</p>
+          <p><strong>Total Hari Kerja:</strong> {data.total_hari_kerja || 0} hari</p>
+        </section>
+
+        {/* Data Pemohon */}
+        <section>
+          <h4 className="section-title">Data Pemohon</h4>
+          <p><strong>Nama Pemohon:</strong> {pemohonNama}</p>
+          <p><strong>Instansi:</strong> {pemohonInstansi}</p>
+          <p><strong>Unit Kerja:</strong> {data.unit_kerja || "-"}</p>
+          <p><strong>Jabatan:</strong> {pemohonJabatan}</p>
+          <p><strong>Email:</strong> {data.user?.email || "-"}</p>
+          <p><strong>No. HP:</strong> {data.user?.no_hp || "-"}</p>
+        </section>
+
+        {/* Dataset */}
+        <section>
+          <h4 className="section-title">
+            Dataset yang Diminta ({datasetGroups.length})
+          </h4>
+          {datasetGroups.length > 0 ? (
+            datasetGroups.map((dataset, i) => (
+              <div className="dataset-card" key={i}>
+                <p><strong>Tema:</strong> {dataset.tema_data}</p>
+                <p><strong>Format File:</strong> {dataset.format_file}</p>
+                <p><strong>Variabel Dipilih ({dataset.selected_variables?.length || 0}):</strong></p>
+                <ul>
+                  {dataset.selected_variables?.map((v, j) => (
+                    <li key={j}>{v.variable_name}</li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          ) : (
+            <p>Tidak ada dataset yang diminta.</p>
+          )}
+        </section>
+
+        {/* Dokumen */}
+        <section>
+          <h4 className="section-title">
+            Dokumen Terunggah ({documents.length})
+          </h4>
+          <ul>
+            {documents.length > 0 ? (
+              documents.map((doc) => (
+                <li key={doc.id} className="document-item">
+                  <span>
+                    <strong>{doc.jenis_dokumen.replace(/_/g, " ").toUpperCase()}:</strong>{" "}
+                    {doc.nama_dokumen}{" "}
+                    {doc.keterangan && `(Ket: ${doc.keterangan})`}
+                  </span>
+                  <button
+                    onClick={() =>
+                      handleViewDocument(doc.id, doc.nama_dokumen, doc.file_type)
+                    }
+                    className="btn-view"
+                  >
+                     Lihat File
+                  </button>
+                </li>
+              ))
+            ) : (
+              <li>Tidak ada dokumen terunggah.</li>
+            )}
+          </ul>
+        </section>
+
+        <div className="modal-footer">
+          <button className="btn-close" onClick={onClose}>
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- Komponen Utama ---
 export default function PermohonanAksesData() {
-  // State untuk menyimpan data, status loading, dan error
+  const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // State filter pencarian
+  const [selectedRequestDetail, setSelectedRequestDetail] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+
   const [filters, setFilters] = useState({
     nomor: "",
     instansi: "",
@@ -17,53 +174,30 @@ export default function PermohonanAksesData() {
     tanggal: "",
   });
 
-  // Ambil data dari backend saat pertama kali halaman dimuat
+  // Fetch data awal
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        setLoading(true);
         const response = await apiClient.get("/request/requests");
+        const allRequests = response.data.data;
 
-        // Format data agar sesuai tabel frontend
-        const formattedData = response.data.data.map((item) => {
-          // Format tanggal dengan aman
-          let tanggalPermohonan = "N/A";
-          const dateValue = item.created_at || item.tanggal_pengajuan;
-          if (dateValue) {
-            const dateObject = new Date(dateValue);
-            if (!isNaN(dateObject.getTime())) {
-              tanggalPermohonan = dateObject
-                .toLocaleDateString("id-ID", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                })
-                .replace(/\./g, "");
-            }
-          }
-
-          return {
-            id: item.id,
-            nomor: item.nomor_permohonan,
-            instansi: item.user?.instansi || item.nama_instansi,
-            permintaan:
-              item.requested_datasets
-                ?.map((d) => d.tema_data)
-                .join(", ") || item.tema_data || "-",
-            pemohon: item.user?.nama || "N/A",
-            jabatan: item.user?.jabatan || "N/A",
-            tanggal: tanggalPermohonan,
-          };
-        });
+        const formattedData = allRequests.map((item) => ({
+          id: item.id,
+          nomor: item.nomor_permohonan,
+          instansi: item.user?.instansi || item.nama_instansi,
+          permintaan:
+            item.requested_datasets?.map((d) => d.tema_data).join(", ") ||
+            item.tema_data ||
+            "-",
+          pemohon: item.user?.nama || "N/A",
+          jabatan: item.user?.jabatan || "N/A",
+          tanggal: formatTimestamp(item.created_at || item.tanggal_pengajuan),
+        }));
 
         setData(formattedData);
-        setError(null);
       } catch (err) {
-        console.error("Error fetching request data:", err.response || err);
-        setError(
-          "Gagal memuat data permohonan. (Akses ditolak atau server error)"
-        );
-        setData([]);
+        console.error("Error fetching request data:", err);
+        setError("Gagal memuat data permohonan.");
       } finally {
         setLoading(false);
       }
@@ -72,55 +206,41 @@ export default function PermohonanAksesData() {
     fetchRequests();
   }, []);
 
-  // Handle perubahan pada input filter
+  const handleDetailClick = async (requestId) => {
+    try {
+      const response = await apiClient.get(`/request/requests/${requestId}`);
+      setSelectedRequestDetail(response.data.data);
+      setShowDetailModal(true);
+    } catch (err) {
+      alert("Gagal memuat detail permohonan.");
+    }
+  };
+
   const handleFilterChange = (e, key) => {
     setFilters({ ...filters, [key]: e.target.value });
   };
 
-  // Filter data sesuai input pengguna
   const filteredData = data.filter((item) =>
     Object.keys(filters).every((key) =>
       item[key]?.toLowerCase().includes(filters[key].toLowerCase())
     )
   );
 
-  // Tampilan saat loading
-  if (loading) {
-    return (
-      <div
-        className="permohonan-container"
-        style={{ textAlign: "center", padding: "50px" }}
-      >
-        <h2>Memuat Data Permohonan...</h2>
-      </div>
-    );
-  }
+  if (loading) return <div className="loading">Memuat data permohonan...</div>;
+  if (error) return <div className="error">{error}</div>;
 
-  // Tampilan saat error
-  if (error) {
-    return (
-      <div
-        className="permohonan-container"
-        style={{ textAlign: "center", padding: "50px", color: "red" }}
-      >
-        <h2>Error: {error}</h2>
-        <p>Pastikan Anda login sebagai Admin dan *backend* berjalan.</p>
-      </div>
-    );
-  }
-
-  // Tampilan utama (read-only)
   return (
     <div className="permohonan-container">
       <div className="header-row">
         <h2>Permohonan Akses Data</h2>
+        
       </div>
 
       <div className="table-section">
-        <h3>TABEL INFORMASI PERMOHONAN AKSES DATA</h3>
+        <h3>Tabel Informasi Permohonan Akses Data</h3>
         <p>
-          Berisi informasi riwayat permohonan akses data (
-          {filteredData.length} data ditemukan)
+          Berisi informasi riwayat permohonan akses data ({filteredData.length}{" "}
+          data ditemukan)
         </p>
 
         <table className="data-table">
@@ -132,18 +252,20 @@ export default function PermohonanAksesData() {
               <th>NAMA PEMOHON</th>
               <th>JABATAN</th>
               <th>TANGGAL PERMOHONAN</th>
+              <th>AKSI</th>
             </tr>
             <tr>
               {Object.keys(filters).map((key) => (
                 <th key={key}>
                   <input
                     type="text"
-                    placeholder={`-- filter ${key} --`}
+                    placeholder={`Filter ${key}`}
                     value={filters[key]}
                     onChange={(e) => handleFilterChange(e, key)}
                   />
                 </th>
               ))}
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -156,11 +278,19 @@ export default function PermohonanAksesData() {
                   <td>{row.pemohon}</td>
                   <td>{row.jabatan}</td>
                   <td>{row.tanggal}</td>
+                  <td>
+                    <button
+                      className="btn-detail"
+                      onClick={() => handleDetailClick(row.id)}
+                    >
+                      ℹ Detail
+                    </button>
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="6" style={{ textAlign: "center" }}>
+                <td colSpan="7" style={{ textAlign: "center" }}>
                   Tidak ada data permohonan yang cocok dengan filter.
                 </td>
               </tr>
@@ -168,6 +298,13 @@ export default function PermohonanAksesData() {
           </tbody>
         </table>
       </div>
+
+      {showDetailModal && (
+        <PermohonanDetailModal
+          data={selectedRequestDetail}
+          onClose={() => setShowDetailModal(false)}
+        />
+      )}
     </div>
   );
 }

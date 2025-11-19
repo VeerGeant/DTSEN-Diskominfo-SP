@@ -257,3 +257,56 @@ form small {
   font-size: 0.9rem;
   color: #333;
 }
+/* ===== Tambahan CSS untuk fitur Desil ===== */
+
+.desil-input-wrapper {
+  margin-top: 12px;
+  background: #fbfffe;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px dashed #cfeeea;
+}
+
+.desil-input-wrapper label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #0a3040;
+}
+
+.desil-input {
+  width: 100%;
+  max-width: 360px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #bcded8;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+  background: #fff;
+}
+
+.desil-helper {
+  display: block;
+  font-size: 0.82rem;
+  color: #556;
+}
+
+/* Pastikan checkbox-grid dan variable-list memiliki spasi cukup */
+.checkbox-grid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 16px;
+}
+
+/* Upload input dan tombol tetap rapi (jika belum ada) */
+.upload-input {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn.lihatdok {
+  flex-shrink: 0;
+  white-space: nowrap;
+}

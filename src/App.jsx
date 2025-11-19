@@ -141,7 +141,6 @@ import Daftar from "./pages/Daftar";
 import Login from "./pages/Login";
 import Pengajuan from "./pages/Pengajuan"; // Riwayat Pengajuan User (TIDAK DIPAKAI DI USER DASHBOARD BARU)
 // Import UserDashboard yang sekarang menjadi dashboard fungsional
-import DashboardUser from "./dashboard/Dashboard.jsx";
 
 
 // --- Pages (Admin) ---
@@ -158,11 +157,13 @@ import ListTahapan from "./admin/ListTahapan.jsx";
 import SetDetailTahapanDokumen from "./admin/SetDetailTahapanDokumen.jsx";
 import SetPermohonanAksesData from "./admin/SetPermohonanAksesData.jsx";
 
+import DetailTahapanDokumen from "./admin/DetailTahapanDokumen.jsx";
 
 // --- Pages (User) ---
+import DashboardUser from "./dashboard/Dashboard.jsx";
 import CekTahapanDokumen from "./dashboard/CekTahapanDokumen.jsx";
-import PermohonanAksesData from "./dashboard/PermohonanAksesData";
-import DetailTahapanDokumen from "./dashboard/DetailTahapanDokumen.jsx";
+import PermohonanAksesData from "./dashboard/PermohonanAksesData.jsx";
+import UserDetailTahapanDokumen from "./dashboard/UserDetailTahapanDokumen.jsx";
 
 
 
@@ -212,12 +213,12 @@ export default function App() {
         {/* ============================================== */}   
         <Route path="user" element={<UserLayout />}>
             <Route 
-                path="cek-tahapan" 
+                path="cek-tahapan-user" 
                 element={<RequireAuth allowedRoles={["user", "sekda"]}><CekTahapanDokumen /></RequireAuth>} 
             />
             <Route 
-                path="detail-tahapan" 
-                element={<RequireAuth allowedRoles={["user", "sekda"]}><DetailTahapanDokumen /></RequireAuth>} 
+                path="detail-tahapan-user" 
+                element={<RequireAuth allowedRoles={["user", "sekda"]}><UserDetailTahapanDokumen /></RequireAuth>} 
             />
             <Route 
                 path="permohonan-akses" 

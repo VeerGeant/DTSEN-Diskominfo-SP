@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import apiClient from "../api/apiClient";
 
-
 // Helper: Format timestamp ke format Indonesia
 const formatTimestamp = (timestamp) => {
   if (!timestamp) return "N/A";
@@ -18,7 +17,7 @@ const formatTimestamp = (timestamp) => {
     .replace(/\./g, "");
 };
 
-// --- Komponen Modal Detail Permohonan ---
+// --- Modal Detail ---
 const PermohonanDetailModal = ({ data, onClose }) => {
   if (!data) return null;
 
@@ -29,7 +28,6 @@ const PermohonanDetailModal = ({ data, onClose }) => {
   const pemohonInstansi = data.user?.instansi || data.nama_instansi || "N/A";
   const pemohonJabatan = data.user?.jabatan || "N/A";
 
-  // Fungsi untuk melihat dokumen
   const handleViewDocument = async (docId, fileName, fileType) => {
     try {
       const response = await apiClient.get(`/request/documents/${docId}/file`);
@@ -71,7 +69,6 @@ const PermohonanDetailModal = ({ data, onClose }) => {
           Detail Permohonan: {data.nomor_permohonan}
         </h3>
 
-        {/* Informasi Utama */}
         <section>
           <h4 className="section-title">Informasi Utama</h4>
           <p><strong>Nomor Permohonan:</strong> {data.nomor_permohonan}</p>
@@ -81,7 +78,6 @@ const PermohonanDetailModal = ({ data, onClose }) => {
           <p><strong>Total Hari Kerja:</strong> {data.total_hari_kerja || 0} hari</p>
         </section>
 
-        {/* Data Pemohon */}
         <section>
           <h4 className="section-title">Data Pemohon</h4>
           <p><strong>Nama Pemohon:</strong> {pemohonNama}</p>
@@ -92,7 +88,6 @@ const PermohonanDetailModal = ({ data, onClose }) => {
           <p><strong>No. HP:</strong> {data.user?.no_hp || "-"}</p>
         </section>
 
-        {/* Dataset */}
         <section>
           <h4 className="section-title">
             Dataset yang Diminta ({datasetGroups.length})
@@ -115,7 +110,6 @@ const PermohonanDetailModal = ({ data, onClose }) => {
           )}
         </section>
 
-        {/* Dokumen */}
         <section>
           <h4 className="section-title">
             Dokumen Terunggah ({documents.length})
@@ -135,7 +129,7 @@ const PermohonanDetailModal = ({ data, onClose }) => {
                     }
                     className="btn-view"
                   >
-                     Lihat File
+                    Lihat File
                   </button>
                 </li>
               ))
@@ -174,7 +168,7 @@ export default function PermohonanAksesData() {
     tanggal: "",
   });
 
-  // Fetch data awal
+  // Fetch Data
   useEffect(() => {
     const fetchRequests = async () => {
       try {
@@ -206,12 +200,35 @@ export default function PermohonanAksesData() {
     fetchRequests();
   }, []);
 
+  // === DELETE HANDLER ===
+  const handleDelete = async (requestId) => {
+    const confirmDelete = window.confirm(
+      "Apakah Anda yakin ingin menghapus permohonan ini? Tindakan ini tidak dapat dibatalkan."
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await apiClient.delete(`/request/requests/${requestId}`);
+
+      setData((prev) => prev.filter((item) => item.id !== requestId));
+
+      alert("Permohonan berhasil dihapus.");
+    } catch (err) {
+      console.error("Error deleting request:", err);
+      alert(
+        err.response?.data?.message ||
+          "Gagal menghapus permohonan. Silakan coba lagi."
+      );
+    }
+  };
+
   const handleDetailClick = async (requestId) => {
     try {
       const response = await apiClient.get(`/request/requests/${requestId}`);
       setSelectedRequestDetail(response.data.data);
       setShowDetailModal(true);
-    } catch (err) {
+    } catch {
       alert("Gagal memuat detail permohonan.");
     }
   };
@@ -284,19 +301,28 @@ export default function PermohonanAksesData() {
                   <td>{row.jabatan}</td>
                   <td>{row.tanggal}</td>
                   <td>
-                    <button
-                      className="btn-detail"
-                      onClick={() => handleDetailClick(row.id)}
-                    >
-                      ℹ Detail
-                    </button>
+                    <div className="action-buttons">
+                      <button
+                        className="btn-detail"
+                        onClick={() => handleDetailClick(row.id)}
+                      >
+                        ℹ Detail
+                      </button>
+
+                      <button
+                        className="btn-delete"
+                        onClick={() => handleDelete(row.id)}
+                      >
+                        🗑 Hapus
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
                 <td colSpan="7" style={{ textAlign: "center" }}>
-                  Tidak ada data permohonan yang cocok dengan filter.
+                  Tidak ada data permohonan yang cocok.
                 </td>
               </tr>
             )}

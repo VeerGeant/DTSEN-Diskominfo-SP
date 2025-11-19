@@ -83,7 +83,7 @@ export default function NavbarAdmin() {
           </button>
           {openMenu === 'progres' && (
             <div className="submenu">
-              <Link to="cek-tahapan" className="submenu-link">Cek Tahapan Dokumen</Link>
+              <Link to="cek-tahapan-user" className="submenu-link">Cek Tahapan Dokumen</Link>
             </div>
           )}
         </div>

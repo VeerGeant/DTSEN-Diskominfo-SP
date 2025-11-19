@@ -58,10 +58,26 @@ export default function TahapanDokumen() {
   
   // Fungsi untuk memformat tanggal
   const formatTanggal = (dateString) => {
-    if (!dateString) return "-";
-    const date = new Date(dateString);
-    return isNaN(date.getTime()) ? "-" : date.toLocaleDateString('id-ID');
-  };
+  if (!dateString) return "-";
+  
+  // Pastikan waktu diubah ke zona waktu lokal
+  const date = new Date(dateString);
+
+  if (isNaN(date.getTime())) return "-";
+
+  // Format lengkap: 12 November 2025, 14:35 WIB
+  const formatted = date.toLocaleString("id-ID", {
+    weekday: "long", // opsional: "Senin", "Selasa", dll.
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  return formatted.replace(",", ""); // biar lebih rapi
+};
 
   return (
     <div className="tahapan-container">
@@ -76,48 +92,47 @@ export default function TahapanDokumen() {
       </div>
 
       <div className="timeline-wrapper">
-        {(() => {
-          // cari index terakhir tahap dengan status selesai
-          const lastDoneIndex = stages.reduce(
-            (lastIndex, stage, i) => (stage.status === "selesai" ? i : lastIndex),
-            -1
-          );
+  {stages.map((item, index) => {
+    // Ambil status dan tahap selanjutnya
+    const nextStatus = stages[index + 1]?.status || "pending";
 
-          return stages.map((item, index) => {
-            const nextStatus = stages[index + 1]?.status || "pending";
+    // Cari index terakhir yang selesai
+    const lastDoneIndex = stages.reduce(
+      (lastIndex, stage, i) => (stage.status === "selesai" ? i : lastIndex),
+      -1
+    );
 
-            // Tentukan apakah garis perlu ditampilkan
-            const shouldShowLine =
-              index < stages.length - 1 && index < lastDoneIndex;
+    // Kalau ini adalah tahap terakhir 'selesai', jangan buat garis setelahnya
+    const isLastDone = index === lastDoneIndex;
 
-            return (
-              <div key={item.id} className="timeline-item">
-                {/* Dot dan garis */}
-                <div className="timeline-status">
-                  <div className={`dot ${getStageStatusClass(item.status)}`}></div>
+    return (
+      <div key={item.id} className="timeline-item">
+        <div className="timeline-status">
+          {/* Dot */}
+          <div className={`dot ${getStageStatusClass(item.status)}`}></div>
 
-                  {shouldShowLine && (
-                    <div className={`line ${getStageStatusClass(nextStatus)}`}></div>
-                  )}
-                </div>
+          {/* Line kanan hanya kalau bukan tahap terakhir 'selesai' */}
+          {!isLastDone && index < stages.length - 1 && (
+            <div className={`line ${getStageStatusClass(nextStatus)}`}></div>
+          )}
+        </div>
 
-                <div className="timeline-nama">
-                  {item.tahap.replace(/_/g, " ").toUpperCase()}
-                </div>
-                <div className="timeline-deskripsi">
-                  {item.keterangan || item.status}
-                </div>
-                <div className="timeline-tanggal">
-                  {formatTanggal(item.tanggal_selesai || item.tanggal_mulai)}
-                </div>
-                <div className="timeline-hari">
-                  {item.hari_kerja || 0} hari kerja
-                </div>
-              </div>
-            );
-          });
-        })()}
+        <div className="timeline-nama">
+          {item.tahap.replace(/_/g, " ").toUpperCase()}
+        </div>
+        <div className="timeline-deskripsi">
+          {item.keterangan || item.status}
+        </div>
+        <div className="timeline-tanggal">
+          {formatTanggal(item.tanggal_selesai || item.tanggal_mulai)}
+        </div>
+        <div className="timeline-hari">
+          {item.hari_kerja || 0} hari kerja
+        </div>
       </div>
+    );
+  })}
+</div>
 
 
       <div className="button-section">

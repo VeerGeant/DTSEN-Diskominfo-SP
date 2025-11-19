@@ -16,12 +16,12 @@ const formatToEnum = (format) => {
 
 // Fungsi utilitas untuk membaca File sebagai Base64
 const readFileAsBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = (error) => reject(error);
-        reader.readAsDataURL(file);
-    });
+  return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+  });
 };
 
 // --- Komponen Utama ---
@@ -32,16 +32,32 @@ export default function TambahPermohonanAkses() {
   const [formData, setFormData] = useState({
     nomorSurat: "",
     nomorPenetapan: "",
-    // Simpan objek file dan data base64 untuk dikirim
-    files: {}, // Untuk menyimpan { key: File Object }
-    base64Data: {}, // Untuk menyimpan { key: Base64 String }
+    files: {},
+    base64Data: {},
   });
 
   const [temaDipilih, setTemaDipilih] = useState("");
   const [requestedDatasets, setRequestedDatasets] = useState([]); 
   const [formatFile, setFormatFile] = useState("");
   const [selectedTema, setSelectedTema] = useState(null);
+
+  /**
+   * selectedVariables structure:
+   * {
+   *   "<tema>": ["Provinsi", "Desil", "NIK Keluarga", ...],
+   *   ...
+   * }
+   */
   const [selectedVariables, setSelectedVariables] = useState({});
+
+  /**
+   * desilValues structure:
+   * {
+   *   "<tema>": "range yg ditulis user, mis. 1-2 atau 0-10",
+   *   ...
+   * }
+   */
+  const [desilValues, setDesilValues] = useState({});
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -77,7 +93,6 @@ export default function TambahPermohonanAkses() {
     "Penerima BPNT", "Penerima BST",
   ];
   
-  // Stages standar yang akan dikirim ke backend
   const defaultStages = [
     { tahap: "dikirim", status: "selesai", keterangan: "Permohonan telah diajukan dan dikirim ke sistem." },
     { tahap: "verifikasi_teknis", status: "menunggu", keterangan: "Menunggu verifikasi kelengkapan dokumen teknis." },
@@ -97,13 +112,10 @@ export default function TambahPermohonanAkses() {
         const file = files[0];
         
         try {
-            // 1. Baca file sebagai Base64 string (Operasi Asinkron)
             const base64String = await readFileAsBase64(file);
             
-            // 2. Satukan semua update state dalam satu panggilan
             setFormData(prev => ({
                 ...prev,
-                // Simpan File Object dan Base64 string
                 files: { ...prev.files, [name]: file },
                 base64Data: { ...prev.base64Data, [name]: base64String }
             }));
@@ -111,8 +123,7 @@ export default function TambahPermohonanAkses() {
         } catch (readError) {
             console.error("Error reading file:", readError);
             setError(`Gagal membaca file ${file.name}.`);
-            
-            // Bersihkan data jika gagal dibaca
+
             setFormData(prev => ({
                 ...prev,
                 files: { ...prev.files, [name]: null },
@@ -121,7 +132,6 @@ export default function TambahPermohonanAkses() {
         }
 
     } else {
-        // Handle input text (e.g., nomorPenetapan atau nomorSurat)
         setFormData(prev => ({ 
             ...prev, 
             [name]: value 
@@ -131,8 +141,9 @@ export default function TambahPermohonanAkses() {
 
   const handleAddTema = () => {
     if (temaDipilih && !requestedDatasets.some((item) => item.tema_data === temaDipilih)) {
-      setRequestedDatasets([...requestedDatasets, { tema_data: temaDipilih }]);
-      setSelectedVariables({ ...selectedVariables, [temaDipilih]: [] }); 
+      setRequestedDatasets(prev => [...prev, { tema_data: temaDipilih }]);
+      setSelectedVariables(prev => ({ ...prev, [temaDipilih]: [] })); 
+      setDesilValues(prev => ({ ...prev, [temaDipilih]: "" })); // inisialisasi desil untuk tema baru
       setTemaDipilih("");
     }
   };
@@ -143,12 +154,14 @@ export default function TambahPermohonanAkses() {
     delete newVars[nama];
     setSelectedVariables(newVars);
 
+    const newDesil = { ...desilValues };
+    delete newDesil[nama];
+    setDesilValues(newDesil);
+
     if (selectedTema === nama) setSelectedTema(null);
   };
 
-  const handleLihatVariabel = (nama) => {
-    setSelectedTema(nama);
-  };
+  const handleLihatVariabel = (nama) => setSelectedTema(nama);
 
   const handleToggleVariable = (nama) => {
     if (!selectedTema) return;
@@ -164,14 +177,16 @@ export default function TambahPermohonanAkses() {
     });
   };
 
-  // --- FUNGSI SUBMIT UTAMA ---
+  const handleDesilChange = (tema, value) => {
+    setDesilValues(prev => ({ ...prev, [tema]: value }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
     setSuccess("");
 
-    // 1. Validasi Dasar
     if (!formData.nomorSurat) {
       setError("Nomor Surat Permohonan wajib diisi.");
       setLoading(false);
@@ -182,12 +197,11 @@ export default function TambahPermohonanAkses() {
         setLoading(false);
         return;
     }
-    
-    // 2. Siapkan Payload Documents (Menggunakan Base64 data)
+
     const documentsPayload = dokumenList
       .map((doc) => {
-        const file = formData.files[doc.key]; // Ambil File Object untuk nama dan tipe
-        const base64 = formData.base64Data[doc.key]; // Ambil Base64 Data
+        const file = formData.files[doc.key];
+        const base64 = formData.base64Data[doc.key];
         
         if (file && base64) {
           const keterangan = doc.key === "penetapan" ? formData.nomorPenetapan : undefined;
@@ -195,27 +209,36 @@ export default function TambahPermohonanAkses() {
           return {
             jenis_dokumen: doc.jenis,
             nama_dokumen: file.name,
-            file_url: null, // Kita gunakan file_data, jadi URL = null
+            file_url: null,
             file_type: file.type,
-            file_data: base64, // ✅ KRITIS: KIRIM DATA BASE64 KE BACKEND
+            file_data: base64,
             keterangan: keterangan,
-            // uploaded_by akan diambil dari token di backend
           };
         }
         return null;
       })
       .filter(doc => doc !== null);
-      
-    // Validasi Dokumen Wajib (jika diperlukan, tambahkan di sini)
 
-    // 3. Siapkan Payload Datasets
-    const datasetsPayload = requestedDatasets.map(dataset => ({
-        tema_data: dataset.tema_data,
-        format_file: formatToEnum(formatFile), 
-        variables: selectedVariables[dataset.tema_data] || [], 
-    }));
+    // Build datasets payload: jika Desil terpilih dan user mengisi desilValues[tema],
+    // kita ganti "Desil" menjadi "Desil: <nilai>" (backend menyimpan string)
+    const datasetsPayload = requestedDatasets.map(dataset => {
+      const tema = dataset.tema_data;
+      const vars = (selectedVariables[tema] || []).slice(); // copy
+      if (vars.includes("Desil")) {
+        const desilVal = (desilValues[tema] || "").trim();
+        // jika ada nilai, replace "Desil" dengan "Desil: <nilai>", jika kosong biarkan "Desil"
+        const idx = vars.indexOf("Desil");
+        if (idx !== -1) {
+          vars[idx] = desilVal ? `Desil: ${desilVal}` : "Desil";
+        }
+      }
+      return {
+        tema_data: tema,
+        format_file: formatToEnum(formatFile),
+        variables: vars,
+      };
+    });
 
-    // 4. Final Payload
     const finalPayload = {
       nomor_permohonan: formData.nomorSurat,
       nama_instansi: "Instansi Placeholder",
@@ -223,13 +246,11 @@ export default function TambahPermohonanAkses() {
       tema_data: requestedDatasets.map(d => d.tema_data).join(', '), 
       tanggal_pengajuan: new Date().toISOString().slice(0, 10),
       total_hari_kerja: 0,
-      
       documents: documentsPayload,
       datasets: datasetsPayload,
       stages: defaultStages,
     };
     
-    // 5. Kirim ke API
     try {
       const response = await apiClient.post("/request/requests", finalPayload);
       setSuccess(response.data.message || "Permohonan berhasil dibuat!");
@@ -240,25 +261,19 @@ export default function TambahPermohonanAkses() {
 
     } catch (err) {
       console.error("Submission error:", err.response || err);
-      const errMsg = err.response?.data?.message || "Gagal membuat permohonan. Cek log konsol.";
+      const errMsg = err.response?.data?.message || "Gagal membuat permohonan.";
       setError(errMsg);
     } finally {
       setLoading(false);
     }
   };
 
-
   const handleLihatDokumen = (key) => {
     const base64 = formData.base64Data[key];
-    if (base64) {
-      // Gunakan Base64 yang sudah ada untuk melihat dokumen di tab baru
-      window.open(base64, "_blank");
-    } else {
-      alert("Belum ada dokumen yang diunggah atau gagal dibaca!");
-    }
+    if (base64) window.open(base64, "_blank");
+    else alert("Belum ada dokumen yang diunggah!");
   };
 
-  // Tentukan variabel yang akan ditampilkan di panel kanan
   const variablesToShow = selectedTema ? selectedVariables[selectedTema] || [] : [];
   
   return (
@@ -283,23 +298,11 @@ export default function TambahPermohonanAkses() {
           {error && <p className="error-text" style={{ color: 'red', marginBottom: '15px' }}>{error}</p>}
           {success && <p className="success-text" style={{ color: 'green', marginBottom: '15px' }}>{success}</p>}
 
-
-          {/* Tab navigation */}
+          {/* Tabs */}
           <div className="tab-container">
-            <button
-              type="button"
-              className={`tab ${activeTab === "dokumen" ? "active" : ""}`}
-              onClick={() => setActiveTab("dokumen")}
-            >
-              UNGGAH KELENGKAPAN DOKUMEN
-            </button>
-            <button
-              type="button"
-              className={`tab ${activeTab === "variable" ? "active" : ""}`}
-              onClick={() => setActiveTab("variable")}
-            >
-              VARIABLE DTSEN
-            </button>
+            <button type="button" className={`tab ${activeTab === "dokumen" ? "active" : ""}`} onClick={() => setActiveTab("dokumen")}>UNGGAH KELENGKAPAN DOKUMEN</button>
+
+            <button type="button" className={`tab ${activeTab === "variable" ? "active" : ""}`} onClick={() => setActiveTab("variable")}>VARIABLE DTSEN</button>
           </div>
 
           {/* Tab Dokumen */}
@@ -310,40 +313,30 @@ export default function TambahPermohonanAkses() {
                   <label>{doc.label}: *</label>
                   <div className="upload-input">
                     <input type="file" name={doc.key} onChange={handleChange} accept=".pdf" />
-                    <button
-                      type="button"
-                      className="btn lihatdok"
-                      // ✅ Menggunakan Base64 dari state untuk melihat dokumen
-                      onClick={() => handleLihatDokumen(doc.key)}
-                      disabled={!formData.base64Data[doc.key]}
-                    >
+                    <button type="button" className="btn lihatdok" onClick={() => handleLihatDokumen(doc.key)} disabled={!formData.base64Data[doc.key]}>
                       📄 Lihat Dokumen
                     </button>
                   </div>
+
                   {doc.key === "penetapan" && (
                     <input
                       type="text"
                       name="nomorPenetapan"
                       placeholder="Nomor Surat Penetapan"
-                      // ✅ Ambil nilai dari formData langsung, karena ini input text biasa
-                      value={formData.nomorPenetapan || ''}
+                      value={formData.nomorPenetapan}
                       onChange={handleChange}
                       className="nomor-penetapan"
                     />
                   )}
                 </div>
               ))}
-              <p className="note">
-                <strong>Berkas bertanda *</strong> merupakan dokumen persyaratan wajib.
-                Maksimal besar berkas 1 MB dan berformat .pdf
-              </p>
+              <p className="note"><strong>Berkas bertanda *</strong> merupakan dokumen persyaratan wajib.</p>
             </div>
           )}
 
-          {/* Tab Variable DTSEN */}
+          {/* Tab Variable */}
           {activeTab === "variable" && (
             <div className="variable-layout">
-              {/* LEFT: Tema dan format */}
               <div className="left-panel">
                 <label>Data yang diperlukan:</label>
                 <div className="add-tema">
@@ -353,9 +346,7 @@ export default function TambahPermohonanAkses() {
                       <option key={i} value={tema}>{tema}</option>
                     ))}
                   </select>
-                  <button type="button" className="btn tambah" onClick={handleAddTema}>
-                    + Tambah Tema
-                  </button>
+                  <button type="button" className="btn tambah" onClick={handleAddTema}>+ Tambah Tema</button>
                 </div>
 
                 <div className="permintaan-data">
@@ -364,21 +355,8 @@ export default function TambahPermohonanAkses() {
                     <div key={i} className="permintaan-item">
                       {item.tema_data}
                       <div className="aksi">
-                        <button
-                          type="button"
-                          className="btn lihat"
-                          onClick={() => handleLihatVariabel(item.tema_data)}
-                          style={{ borderColor: selectedTema === item.tema_data ? '#007bff' : 'transparent' }}
-                        >
-                          Lihat Variabel
-                        </button>
-                        <button
-                          type="button"
-                          className="btn hapus"
-                          onClick={() => handleHapusTema(item.tema_data)}
-                        >
-                          Hapus Tema
-                        </button>
+                        <button type="button" className="btn lihat" onClick={() => handleLihatVariabel(item.tema_data)}>Lihat Variabel</button>
+                        <button type="button" className="btn hapus" onClick={() => handleHapusTema(item.tema_data)}>Hapus</button>
                       </div>
                     </div>
                   ))}
@@ -386,7 +364,7 @@ export default function TambahPermohonanAkses() {
 
                 <div className="format-file">
                   <label>Format File Data:</label>
-                  <select value={formatFile} onChange={(e) => setFormatFile(e.target.value)} required>
+                  <select value={formatFile} onChange={(e) => setFormatFile(e.target.value)}>
                     <option value="">-- pilih format file data --</option>
                     {formatOptions.map((opt, i) => (
                       <option key={i} value={opt}>{opt}</option>
@@ -395,53 +373,52 @@ export default function TambahPermohonanAkses() {
                 </div>
               </div>
 
-              {/* RIGHT: Variable Data */}
               <div className="right-panel">
                 <div className="data-header">
-                  <div>
-                    <strong>Nama Data:</strong>{" "}
-                    {selectedTema ? selectedTema : "-"}
-                  </div>
-                  <button type="button" className="btn lihatcak" disabled={!selectedTema}>Lihat Cakupan</button>
+                  <div><strong>Nama Data:</strong> {selectedTema || "-"}</div>
+                  <button className="btn lihatcak" type="button" disabled={!selectedTema}>Lihat Cakupan</button>
                 </div>
 
                 <div className="variable-list">
-                  <strong>Variable Data ({selectedTema ? (selectedVariables[selectedTema] || []).length : 0}):</strong>
+                  <strong>Variable Data ({variablesToShow.length}):</strong>
                   <div className="checkbox-grid">
                     {variableDataList.map((nama, i) => (
                       <label key={i} className="checkbox-item">
                         <input
                           type="checkbox"
+                          disabled={!selectedTema}
                           checked={variablesToShow.includes(nama)}
                           onChange={() => handleToggleVariable(nama)}
-                          disabled={!selectedTema}
                         />
                         {nama}
                       </label>
                     ))}
                   </div>
+
+                  {/* Jika Desil dipilih untuk tema yang sedang aktif, tampilkan input string */}
+                  {selectedTema && variablesToShow.includes("Desil") && (
+                    <div className="desil-input-wrapper">
+                      <label><strong>Range Desil (string):</strong></label>
+                      <input
+                        type="text"
+                        className="desil-input"
+                        placeholder="Contoh: 1-2 atau 0-10 atau kuartil 1-2"
+                        value={desilValues[selectedTema] || ""}
+                        onChange={(e) => handleDesilChange(selectedTema, e.target.value)}
+                      />
+                      <small className="desil-helper">Nilai ini akan dikirim sebagai string: <code>Desil: &lt;nilai&gt;</code></small>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           )}
 
-          {/* Tombol bawah */}
           <div className="button-row">
-            <button 
-              type="submit" 
-              className="btn kirim"
-              disabled={loading}
-            >
-              {loading ? 'Mengirim...' : 'Kirim Permohonan'}
-            </button>
-            <button
-              type="button"
-              className="btn kembali"
-              onClick={() => navigate('/admin/permohonan-akses')}
-            >
-              ↩ Kembali
-            </button>
+            <button className="btn kirim" type="submit" disabled={loading}>{loading ? "Mengirim..." : "Kirim Permohonan"}</button>
+            <button className="btn kembali" type="button" onClick={() => navigate("/admin/permohonan-akses")}>↩ Kembali</button>
           </div>
+
         </form>
       </div>
     </div>
